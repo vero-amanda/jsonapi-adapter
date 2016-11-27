@@ -12,8 +12,8 @@ import com.nextmatch.vero.jsonapiadapter.model.Resource;
  */
 public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapter<T> {
 
-    public static <T extends Resource> JsonApiResponseAdapter createFromJsonObject(Gson context, TypeToken<T> typeToken, JsonObject jsonObject) {
-        return new JsonApiResponseAdapter();
+    public JsonApiResponseAdapter(Gson context, TypeToken<T> typeToken, JsonObject jsonObject) {
+
     }
 
     @Override

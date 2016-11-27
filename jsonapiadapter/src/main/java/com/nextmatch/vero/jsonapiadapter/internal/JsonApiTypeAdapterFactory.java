@@ -45,7 +45,7 @@ public class JsonApiTypeAdapterFactory implements TypeAdapterFactory {
         @Override
         public JsonApiAdapter<T> read(JsonReader in) throws IOException {
             JsonObject jsonApi = _context.fromJson(in, JsonObject.class);
-            return JsonApiResponseAdapter.createFromJsonObject(_context, _dataTypeToken, jsonApi);
+            return new JsonApiResponseAdapter<>(_context, _dataTypeToken, jsonApi);
         }
 
     }
