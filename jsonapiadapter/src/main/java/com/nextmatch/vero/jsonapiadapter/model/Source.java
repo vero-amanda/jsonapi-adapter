@@ -9,8 +9,16 @@ import com.google.gson.annotations.SerializedName;
 public class Source {
 
     @SerializedName("pointer")
-    public String _pointer;
+    private String _pointer;
     @SerializedName("parameter")
-    public String _parameter;
+    private String _parameter;
+
+    public String getPointer() {
+        return _pointer;
+    }
+
+    public String getParameter() {
+        return _parameter;
+    }
 
 }
