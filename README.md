@@ -1,1 +1,1 @@
-# GsonApiAdapter
+# JsonApiAdapter
