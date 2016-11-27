@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GsonApiAdapter.iml" filepath="$PROJECT_DIR$/GsonApiAdapter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/JsonApiAdapter.iml" filepath="$PROJECT_DIR$/JsonApiAdapter.iml" />
       <module fileurl="file://$PROJECT_DIR$/demo/demo.iml" filepath="$PROJECT_DIR$/demo/demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/jsonapiadapter/jsonapiadapter.iml" filepath="$PROJECT_DIR$/jsonapiadapter/jsonapiadapter.iml" />
     </modules>

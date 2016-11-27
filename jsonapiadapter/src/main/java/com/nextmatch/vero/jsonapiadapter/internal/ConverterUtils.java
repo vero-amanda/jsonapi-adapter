@@ -2,16 +2,16 @@ package com.nextmatch.vero.jsonapiadapter.internal;
 
 import com.google.gson.internal.$Gson$Types;
 import com.google.gson.reflect.TypeToken;
+import com.nextmatch.vero.jsonapiadapter.annotation.Type;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 
 /**
  * @author vero
  * @since 2016. 11. 27.
  */
-class ConverterUtils {
+public class ConverterUtils {
 
     /**
      * ResourceTypeAdapter를 사용할 TypeToken인지 확인.
@@ -51,16 +51,25 @@ class ConverterUtils {
      * @return Element TypeToken
      */
     private static TypeToken getCollectionElementTypeToken(TypeToken typeToken) {
-        return TypeToken.get(getCollectionElementType(typeToken));
+        return TypeToken.get($Gson$Types.getCollectionElementType(typeToken.getType(), typeToken.getRawType()));
     }
 
     /**
-     * Collection ElementType을 반환
-     * @param typeToken    Collection TypeToken from Gson
-     * @return Element Type
+     * Resource 객체의 Type 정보를 반환
+     * @param resource    Resource 객체
+     * @return Type value
      */
-    private static Type getCollectionElementType(TypeToken typeToken) {
-        return $Gson$Types.getCollectionElementType(typeToken.getType(), typeToken.getRawType());
+    public static String getJsonApiType(Resource resource) {
+        return getJsonApiType(resource.getClass());
+    }
+
+    /**
+     * Resource 객체의 Type 정보를 반환
+     * @param classOfResource    Resource class
+     * @return Type value
+     */
+    static String getJsonApiType(Class<? extends Resource> classOfResource) {
+        return classOfResource.getAnnotation(Type.class).value();
     }
 
 }

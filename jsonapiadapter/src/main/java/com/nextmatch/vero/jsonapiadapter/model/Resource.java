@@ -1,28 +1,22 @@
 package com.nextmatch.vero.jsonapiadapter.model;
 
-import com.nextmatch.vero.jsonapiadapter.annotation.Type;
-
 /**
  * @author vero
  * @since 2016. 11. 16.
  */
 public class Resource {
 
-    private transient String _id;
+    private transient ResourceIdentifier _identifier;
 
-    public void setId(String id) {
-        this._id = id;
+    public void setIdentifier(Integer id) {
+        getIdentifier().setId(id);
     }
 
-    public String getId() {
-        return this._id;
-    }
+    public ResourceIdentifier getIdentifier() {
+        if (_identifier == null)
+            _identifier = ResourceIdentifier.create(this, null);
 
-    public String getType() {
-        Type gsonApi = getClass().getAnnotation(Type.class);
-        if (gsonApi != null) return gsonApi.value();
-
-        return null;
+        return _identifier;
     }
 
 }
