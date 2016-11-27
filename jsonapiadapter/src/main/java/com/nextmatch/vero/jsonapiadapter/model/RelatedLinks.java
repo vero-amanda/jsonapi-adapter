@@ -14,12 +14,10 @@ public class RelatedLinks implements Links {
     @SerializedName("related")
     private Related _related;
 
-    @Override
     public String getSelf() {
         return _self;
     }
 
-    @Override
     public String getRelated() {
         if (_related != null)
             return _related._href;
@@ -27,16 +25,7 @@ public class RelatedLinks implements Links {
         return null;
     }
 
-    public Meta getRelatedMeta() {
-        if (_related != null)
-            return _related._meta;
-
-        return null;
-    }
-
     private static class Related {
-
-        Meta _meta;
 
         String _href;
 
