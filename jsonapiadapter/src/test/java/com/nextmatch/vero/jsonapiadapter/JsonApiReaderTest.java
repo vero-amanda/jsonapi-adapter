@@ -65,8 +65,12 @@ public class JsonApiReaderTest {
     public void relationships() throws Exception {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.simpleArrayRelationshipsResource, Article.class);
         if (responseAdapter.isSuccess()) {
+            Article article = responseAdapter.getData();
+            assertNotNull(article);
             assertTrue(responseAdapter.hasRelationships("author"));
             assertTrue(responseAdapter.hasRelationships("comments"));
+            assertTrue(responseAdapter.hasRelationships(article, "author"));
+            assertTrue(responseAdapter.hasRelationships(article, "comments"));
         }
     }
 

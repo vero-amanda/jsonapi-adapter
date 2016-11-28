@@ -78,12 +78,28 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
 
     /**
      * Relationships 정보가 존재하는지 확인.
-     * @param data    ResourceIdentifier 를 갖고있는 Data Resource.
-     * @param name    Relationship name
+     * @param resource      ResourceIdentifier를 가지는 Resource Instance
+     * @param name          Relationship name
      * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
      */
-    public boolean hasRelationships(T data, String name) {
-        return hasRelationships(data, name, false);
+    public boolean hasRelationships(T resource, String name) {
+        return hasRelationships(resource.getIdentifier(), name, false);
+    }
+
+    public <R extends Resource> List<R> getCollectionIncluded(T parentResource, String name, Class<R> classOfResource) {
+        if (hasRelationships(parentResource, name)) {
+            Map<String, JsonElement> relationshipsMap = _relationships.get(parentResource.getIdentifier());
+            JsonElement jsonElement = relationshipsMap.get(name);
+            if (!jsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
+            if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
+
+        }
+
+        return null;
+    }
+
+    public <R extends Resource> R getIncluded(T parentResource, String name, Class<R> classOfResource) {
+        return null;
     }
 
     @Override
@@ -92,25 +108,25 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Resource 에 Relationship 정보가 있는지
-     * @param resource
-     * @param name
-     * @param <R>
-     * @return
+     * Relationships 정보가 존재하는지 확인.
+     * @param identifier    ResourceIdentifier
+     * @param name          Relationship name
+     * @param isIncluded    Included Resource 여부
+     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
      */
-    private <R extends Resource> boolean hasRelationships(R resource, String name, boolean isIncluded) {
+    private  boolean hasRelationships(ResourceIdentifier identifier, String name, boolean isIncluded) {
         if (isIncluded) {
             // TODO: 2016. 11. 28. included 에서 relationships 검사..
             return false;
         } else {
-            return hasRelationshipsFromData(resource, name);
+            return hasRelationshipsFromData(identifier, name);
         }
     }
 
-    private <R extends Resource> boolean hasRelationshipsFromData(R resource, String name) {
+    private boolean hasRelationshipsFromData(ResourceIdentifier identifier, String name) {
         if (_relationships != null && !_relationships.isEmpty()) {
-            if (_relationships.containsKey(resource.getIdentifier())) {
-                return _relationships.get(resource.getIdentifier()).containsKey(name);
+            if (_relationships.containsKey(identifier)) {
+                return _relationships.get(identifier).containsKey(name);
             }
         }
 
