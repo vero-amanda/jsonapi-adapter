@@ -32,6 +32,38 @@ interface JsonApiStrings {
             "  }]\n" +
             "}";
 
+    String simpleArrayRelationshipsResource = "{\n" +
+            "  \"data\": [{\n" +
+            "    \"type\": \"articles\",\n" +
+            "    \"id\": \"1\",\n" +
+            "    \"attributes\": {\n" +
+            "      \"title\": \"JSON API paints my bikeshed!\"\n" +
+            "    },\n" +
+            "    \"relationships\": {\n" +
+            "      \"author\": {\n" +
+            "        \"links\": {\n" +
+            "          \"self\": \"http://example.com/articles/1/relationships/author\",\n" +
+            "          \"related\": \"http://example.com/articles/1/author\"\n" +
+            "        },\n" +
+            "        \"data\": { \"type\": \"people\", \"id\": \"9\" }\n" +
+            "      },\n" +
+            "      \"comments\": {\n" +
+            "        \"links\": {\n" +
+            "          \"self\": \"http://example.com/articles/1/relationships/comments\",\n" +
+            "          \"related\": \"http://example.com/articles/1/comments\"\n" +
+            "        },\n" +
+            "        \"data\": [\n" +
+            "          { \"type\": \"comments\", \"id\": \"5\" },\n" +
+            "          { \"type\": \"comments\", \"id\": \"12\" }\n" +
+            "        ]\n" +
+            "      }\n" +
+            "    },\n" +
+            "    \"links\": {\n" +
+            "      \"self\": \"http://example.com/articles/1\"\n" +
+            "    }\n" +
+            "  }]\n" +
+            "}";
+
     String error = "{\n" +
             "  \"errors\": [\n" +
             "    {\n" +

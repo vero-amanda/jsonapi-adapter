@@ -8,7 +8,7 @@ public class Resource {
 
     private transient ResourceIdentifier _identifier;
 
-    public void setIdentifier(Integer id) {
+    public void setIdentifier(String id) {
         getIdentifier().setId(id);
     }
 

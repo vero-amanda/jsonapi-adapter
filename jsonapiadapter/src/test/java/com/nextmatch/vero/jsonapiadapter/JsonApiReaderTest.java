@@ -7,6 +7,7 @@ import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiTypeAdapterFactory;
 import com.nextmatch.vero.jsonapiadapter.model.Article;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
+import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,35 @@ public class JsonApiReaderTest {
         if (responseAdapter.isSuccess()) {
             Article article = responseAdapter.getData();
             assertNotNull(article);
+            assertNotNull(article.getIdentifier());
+            assertTrue(article.getIdentifier().getId().equals("1"));
+            assertTrue(article.getIdentifier().getType().equals("articles"));
         }
+    }
+
+    @Test
+    public void resourceArrayIdentifier() throws Exception {
+        JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.simpleArrayResource, Article.class);
+        if (responseAdapter.isSuccess()) {
+            List<Article> articles = responseAdapter.getDataList();
+            assertNotNull(articles);
+            assertTrue(articles.size() == 1);
+        }
+    }
+
+    @Test
+    public void relationships() throws Exception {
+        JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.simpleArrayRelationshipsResource, Article.class);
+        if (responseAdapter.isSuccess()) {
+            assertTrue(responseAdapter.hasRelationships("author"));
+            assertTrue(responseAdapter.hasRelationships("comments"));
+        }
+    }
+
+    @Test(expected = JsonApiParseException.class)
+    public void relationshipsException() {
+        JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.error, Article.class);
+        assertTrue(responseAdapter.hasRelationships("author"));
     }
 
     @Test

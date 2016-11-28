@@ -7,10 +7,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.nextmatch.vero.jsonapiadapter.JsonApiConstants;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
+import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
+import com.nextmatch.vero.jsonapiadapter.model.ResourceIdentifier;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author vero
@@ -23,6 +27,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     private JsonApiReader _reader;
 
     private List<T> _data;
+    private Map<ResourceIdentifier, Map<String, JsonElement>> _relationships;
     private List<Error> _errors;
 
     JsonApiResponseAdapter(Gson context, TypeToken<T> typeToken, JsonObject jsonApiObject) {
@@ -61,6 +66,58 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
+     * Relationships 정보가 존재하는지 확인.
+     * 첫번째 Data를 검사한다
+     * @param name    Relationship name
+     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     */
+    public boolean hasRelationships(String name) {
+        if (getData() == null) throw new JsonApiParseException("Data도 없는데 무슨짓잉가");
+        return hasRelationships(getData(), name);
+    }
+
+    /**
+     * Relationships 정보가 존재하는지 확인.
+     * @param data    ResourceIdentifier 를 갖고있는 Data Resource.
+     * @param name    Relationship name
+     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     */
+    public boolean hasRelationships(T data, String name) {
+        return hasRelationships(data, name, false);
+    }
+
+    @Override
+    public JsonObject getJsonApiObject() {
+        return _jsonApiObject;
+    }
+
+    /**
+     * Resource 에 Relationship 정보가 있는지
+     * @param resource
+     * @param name
+     * @param <R>
+     * @return
+     */
+    private <R extends Resource> boolean hasRelationships(R resource, String name, boolean isIncluded) {
+        if (isIncluded) {
+            // TODO: 2016. 11. 28. included 에서 relationships 검사..
+            return false;
+        } else {
+            return hasRelationshipsFromData(resource, name);
+        }
+    }
+
+    private <R extends Resource> boolean hasRelationshipsFromData(R resource, String name) {
+        if (_relationships != null && !_relationships.isEmpty()) {
+            if (_relationships.containsKey(resource.getIdentifier())) {
+                return _relationships.get(resource.getIdentifier()).containsKey(name);
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Error 목록 반환.
      * @return Error 목록.
      */
@@ -68,17 +125,22 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         return this._errors;
     }
 
+    /**
+     * Top Level Tag parsing.
+     */
     private void readTopLevel() {
         if (_jsonApiObject.has(JsonApiConstants.NAME_DATA)) {
             _data = new ArrayList<>();
+            _relationships = new LinkedHashMap<>();
+
             JsonElement dataJsonElement = _jsonApiObject.get(JsonApiConstants.NAME_DATA);
             if (dataJsonElement.isJsonArray()) {
                 for (int i = 0; i < dataJsonElement.getAsJsonArray().size(); i++) {
                     JsonObject dataJsonObject = dataJsonElement.getAsJsonArray().get(i).getAsJsonObject();
-                    _data.add(readData(dataJsonObject, _typeToken));
+                    readData(dataJsonObject);
                 }
             } else {
-                _data.add(readData(dataJsonElement.getAsJsonObject(), _typeToken));
+                readData(dataJsonElement.getAsJsonObject());
             }
         } else if (_jsonApiObject.has(JsonApiConstants.NAME_ERRORS)) {
             JsonArray errorJsonArray = _jsonApiObject.get(JsonApiConstants.NAME_ERRORS).getAsJsonArray();
@@ -86,17 +148,32 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         }
     }
 
-    private <R extends Resource> R readData(JsonObject dataJsonObject, TypeToken<R> typeToken) {
-        return _reader.readData(dataJsonObject, typeToken);
+    /**
+     * Top Level Data tag parsing.
+     * @param jsonObject    Data object
+     */
+    private void readData(JsonObject jsonObject) {
+        T instance = readResource(jsonObject, _typeToken);
+        Map<String, JsonElement> relationships = _reader.readRelationships(jsonObject);
+
+        _data.add(instance);
+        if (relationships != null)
+            _relationships.put(instance.getIdentifier(), relationships);
     }
 
-    private void readErrors(JsonArray errorJsonArray) {
-        _errors = _reader.readErrors(errorJsonArray);
+    /**
+     * Resource parsing
+     * @param jsonObject    Resource tag jsonObject
+     * @param typeToken     Resource TypeToken
+     * @param <R>           Resource class
+     * @return Resource instance
+     */
+    private <R extends Resource> R readResource(JsonObject jsonObject, TypeToken<R> typeToken) {
+        return _reader.readResource(jsonObject, typeToken);
     }
 
-    @Override
-    public JsonObject getJsonApiObject() {
-        return _jsonApiObject;
+    private void readErrors(JsonArray jsonArray) {
+        _errors = _reader.readErrors(jsonArray);
     }
 
 }
