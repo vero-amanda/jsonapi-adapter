@@ -27,7 +27,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     private JsonApiReader _reader;
 
     private List<T> _data;
-    private Map<ResourceIdentifier, Map<String, JsonElement>> _relationships;
+    private Map<ResourceIdentifier, Map<String, JsonObject>> _relationships;
     private List<Error> _errors;
 
     JsonApiResponseAdapter(Gson context, TypeToken<T> typeToken, JsonObject jsonApiObject) {
@@ -88,11 +88,15 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
 
     public <R extends Resource> List<R> getCollectionIncluded(T parentResource, String name, Class<R> classOfResource) {
         if (hasRelationships(parentResource, name)) {
-            Map<String, JsonElement> relationshipsMap = _relationships.get(parentResource.getIdentifier());
-            JsonElement jsonElement = relationshipsMap.get(name);
-            if (!jsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
+            Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
+            JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
+            if (!dataJsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
             if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
 
+            List<ResourceIdentifier> relationshipIdentifiers = _reader.relationshipsToIdentifierList(dataJsonElement.getAsJsonArray());
+            System.out.println("relationshipIdentifiers size : " + relationshipIdentifiers.size());
+
+            JsonArray jsonArray = _jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
         }
 
         return null;
@@ -170,7 +174,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      */
     private void readData(JsonObject jsonObject) {
         T instance = readResource(jsonObject, _typeToken);
-        Map<String, JsonElement> relationships = _reader.readRelationships(jsonObject);
+        Map<String, JsonObject> relationships = _reader.readRelationships(jsonObject);
 
         _data.add(instance);
         if (relationships != null)

@@ -44,18 +44,28 @@ class JsonApiReader {
         return instance;
     }
 
-    Map<String, JsonElement> readRelationships(JsonObject jsonObject) {
+    Map<String, JsonObject> readRelationships(JsonObject jsonObject) {
         if (jsonObject.has(JsonApiConstants.NAME_RELATIONSHIPS)) {
-            Map<String, JsonElement> relationships = new LinkedHashMap<>();
+            Map<String, JsonObject> relationships = new LinkedHashMap<>();
             JsonObject relationship = jsonObject.get(JsonApiConstants.NAME_RELATIONSHIPS).getAsJsonObject();
             for (Map.Entry<String, JsonElement> entry : relationship.entrySet()) {
-                relationships.put(entry.getKey(), entry.getValue());
+                relationships.put(entry.getKey(), entry.getValue().getAsJsonObject());
             }
 
             return relationships;
         }
 
         return null;
+    }
+
+    List<ResourceIdentifier> relationshipsToIdentifierList(JsonArray jsonArray) {
+        List<ResourceIdentifier> identifiers = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
+            identifiers.add(readResourceIdentifier(jsonObject));
+        }
+
+        return identifiers;
     }
 
     private ResourceIdentifier readResourceIdentifier(JsonObject jsonObject) {

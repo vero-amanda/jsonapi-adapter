@@ -6,6 +6,7 @@ import com.nextmatch.vero.jsonapiadapter.internal.GsonAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiTypeAdapterFactory;
 import com.nextmatch.vero.jsonapiadapter.model.Article;
+import com.nextmatch.vero.jsonapiadapter.model.Comment;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 
@@ -78,6 +79,13 @@ public class JsonApiReaderTest {
     public void relationshipsException() {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.error, Article.class);
         assertTrue(responseAdapter.hasRelationships("author"));
+    }
+
+    @Test
+    public void included() throws Exception {
+        JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
+        assertTrue(responseAdapter.hasRelationships("comments"));
+        responseAdapter.getCollectionIncluded(responseAdapter.getData(), "comments", Comment.class);
     }
 
     @Test

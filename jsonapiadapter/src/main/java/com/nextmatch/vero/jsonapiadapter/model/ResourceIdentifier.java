@@ -39,4 +39,16 @@ public class ResourceIdentifier {
         this._id = id;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (ResourceIdentifier.class.isInstance(obj)) {
+            ResourceIdentifier identifier = ResourceIdentifier.class.cast(obj);
+
+            if ((_id != null && identifier.getId() != null && _id.equals(identifier.getId())) &&
+                    (_type != null && identifier.getType() != null && _type.equals(identifier.getType())))
+                return true;
+        }
+
+        return false;
+    }
 }
