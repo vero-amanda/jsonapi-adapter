@@ -12,6 +12,10 @@ public class Resource {
         getIdentifier().setId(id);
     }
 
+    public void setIdentifier(ResourceIdentifier identifier) {
+        this._identifier = identifier;
+    }
+
     public ResourceIdentifier getIdentifier() {
         if (_identifier == null)
             _identifier = ResourceIdentifier.create(this, null);

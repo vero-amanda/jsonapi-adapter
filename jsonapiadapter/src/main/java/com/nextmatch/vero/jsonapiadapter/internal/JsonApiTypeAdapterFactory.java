@@ -7,8 +7,6 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.nextmatch.vero.jsonapiadapter.adapter.JsonApiAdapter;
-import com.nextmatch.vero.jsonapiadapter.adapter.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 
 import java.io.IOException;
@@ -27,25 +25,25 @@ public class JsonApiTypeAdapterFactory implements TypeAdapterFactory {
         return new Adapter(gson, type);
     }
 
-    private static final class Adapter<T extends Resource> extends TypeAdapter<JsonApiAdapter<T>> {
+    private static final class Adapter<T extends Resource> extends TypeAdapter<JsonApiAdapter> {
 
         private final Gson _context;
-        private final TypeToken<T> _dataTypeToken;
+        private final TypeToken<T> _typeToken;
 
         Adapter(Gson context, TypeToken<T> dataTypeToken) {
             this._context = context;
-            this._dataTypeToken = dataTypeToken;
+            this._typeToken = dataTypeToken;
         }
 
         @Override
         public void write(JsonWriter out, JsonApiAdapter value) throws IOException {
-            _context.toJson(value.getJsonApiElement(), out);
+            _context.toJson(value.getJsonApiObject(), out);
         }
 
         @Override
-        public JsonApiAdapter<T> read(JsonReader in) throws IOException {
+        public JsonApiAdapter read(JsonReader in) throws IOException {
             JsonObject jsonApi = _context.fromJson(in, JsonObject.class);
-            return new JsonApiResponseAdapter<>(_context, _dataTypeToken, jsonApi);
+            return new JsonApiResponseAdapter<>(_context, _typeToken, jsonApi);
         }
 
     }
