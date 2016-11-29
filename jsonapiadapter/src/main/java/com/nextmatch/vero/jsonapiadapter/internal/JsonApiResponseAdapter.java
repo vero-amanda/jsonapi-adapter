@@ -41,7 +41,6 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         this._reader = new JsonApiReader(context);
         this._data = new ArrayList<>();
         this._relationships = new LinkedHashMap<>();
-        this._included = new ArrayList<>();
 
         readTopLevel();
     }
@@ -121,16 +120,16 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      * @param name               Relationships 에 정의된 Name
      * @param classOfResource    Array Data 의 Type
      * @param <R>                Array Data 의 Type
-     * @return Collection Included Data
+     * @return Included Data Collection
      */
-    public <R extends Resource> List<R> getCollectionIncluded(T parentResource, String name, Class<R> classOfResource) {
+    public <R extends Resource> List<R> getIncludedCollection(T parentResource, String name, Class<R> classOfResource) {
         if (hasRelationships(parentResource, name)) {
             Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
             JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
             if (!dataJsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
-            if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
+            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
 
-            return _reader.readCollectionIncluded(_jsonApiObject, dataJsonElement.getAsJsonArray(), classOfResource);
+            return _reader.readIncludedCollection(_included, dataJsonElement.getAsJsonArray(), classOfResource);
         }
 
         return null;
@@ -149,9 +148,9 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
             Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
             JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
             if (!dataJsonElement.isJsonObject()) throw new JsonApiParseException(name + " relationship은 object가 아님");
-            if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
+            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
 
-            return _reader.readIncluded(_jsonApiObject, dataJsonElement.getAsJsonObject(), classOfResource);
+            return _reader.readIncluded(_included, dataJsonElement.getAsJsonObject(), classOfResource);
         }
 
         return null;
@@ -209,9 +208,9 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
     private boolean hasRelationshipsFromIncluded(ResourceIdentifier identifier, String name) {
-        if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
-        JsonArray jsonArray = _jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
-        JsonObject includedObject = _reader.findIncludedJsonObjectFromResourceIdentifier(jsonArray, identifier);
+        if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
+
+        JsonObject includedObject = _reader.findIncludedJsonObjectFromResourceIdentifier(_included, identifier);
         if (includedObject != null) {
             if (_reader.hasRelationships(includedObject)) {
                 Map<String, JsonObject> relationships = _reader.readRelationships(includedObject);

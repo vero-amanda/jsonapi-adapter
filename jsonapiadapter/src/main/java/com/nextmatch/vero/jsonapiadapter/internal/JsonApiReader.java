@@ -150,19 +150,17 @@ class JsonApiReader {
 
     /**
      * Included 의 Array Data 를 Collection 으로 반환.
-     * @param jsonApiObject     Root JsonObject
-     * @param dataJsonArray     Relationships#Data JsonArray
-     * @param classOfT          Array Data 의 Type
-     * @param <T>               Array Data 의 Type
-     * @return Collection Included Data
+     * @param includedJsonObjectList    Included JsonObject Collection
+     * @param dataJsonArray             Relationships#Data JsonArray
+     * @param classOfT                  Array Data 의 Type
+     * @param <T>                       Array Data 의 Type
+     * @return Included Data Collection
      */
-    <T extends Resource> List<T> readCollectionIncluded(JsonObject jsonApiObject, JsonArray dataJsonArray, Class<T> classOfT) {
+    <T extends Resource> List<T> readIncludedCollection(List<JsonObject> includedJsonObjectList, JsonArray dataJsonArray, Class<T> classOfT) {
         List<ResourceIdentifier> relationshipIdentifiers = relationshipsToIdentifierList(dataJsonArray);
         List<T> includedList = new ArrayList<>();
 
-        JsonArray jsonArray = jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
+        for (JsonObject jsonObject : includedJsonObjectList) {
             for (ResourceIdentifier identifier : relationshipIdentifiers) {
                 if (equalsResourceIdentifier(identifier, jsonObject)) {
                     includedList.add(readResource(jsonObject, TypeToken.get(classOfT)));
@@ -176,17 +174,15 @@ class JsonApiReader {
 
     /**
      * Included 의 Object Data 를 반환.
-     * @param jsonApiObject     Root JsonObject
-     * @param dataJsonObject    Relationships#Data JsonObject
-     * @param classOfT          Data 의 Type
-     * @param <T>               Data 의 Type
-     * @return Collection Included Data
+     * @param includedJsonObjectList    Included JsonObject Collection
+     * @param dataJsonObject            Relationships#Data JsonObject
+     * @param classOfT                  Data 의 Type
+     * @param <T>                       Data 의 Type
+     * @return Included Data
      */
-    <T extends Resource> T readIncluded(JsonObject jsonApiObject, JsonObject dataJsonObject, Class<T> classOfT) {
+    <T extends Resource> T readIncluded(List<JsonObject> includedJsonObjectList, JsonObject dataJsonObject, Class<T> classOfT) {
         ResourceIdentifier identifier = readResourceIdentifier(dataJsonObject);
-        JsonArray jsonArray = jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
+        for (JsonObject jsonObject : includedJsonObjectList) {
             if (equalsResourceIdentifier(identifier, jsonObject)) {
                 return readResource(jsonObject, TypeToken.get(classOfT));
             }
@@ -195,9 +191,8 @@ class JsonApiReader {
         return readResource(dataJsonObject, TypeToken.get(classOfT));
     }
 
-    JsonObject findIncludedJsonObjectFromResourceIdentifier(JsonArray includedJsonArray, ResourceIdentifier resourceIdentifier) {
-        for (int i = 0; i < includedJsonArray.size(); i++) {
-            JsonObject jsonObject = includedJsonArray.get(i).getAsJsonObject();
+    JsonObject findIncludedJsonObjectFromResourceIdentifier(List<JsonObject> includedJsonObjectList, ResourceIdentifier resourceIdentifier) {
+        for (JsonObject jsonObject : includedJsonObjectList) {
             if (equalsResourceIdentifier(resourceIdentifier, jsonObject)) {
                 return jsonObject;
             }

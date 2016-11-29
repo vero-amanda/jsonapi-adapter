@@ -88,7 +88,7 @@ public class JsonApiReaderTest {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
         Article article = responseAdapter.getData();
         assertTrue(responseAdapter.hasRelationships("comments"));
-        List<Comment> comments = responseAdapter.getCollectionIncluded(article, "comments", Comment.class);
+        List<Comment> comments = responseAdapter.getIncludedCollection(article, "comments", Comment.class);
         assertTrue(comments.size() == 2);
         People author = responseAdapter.getIncluded(article, "author", People.class);
         assertNotNull(author);
