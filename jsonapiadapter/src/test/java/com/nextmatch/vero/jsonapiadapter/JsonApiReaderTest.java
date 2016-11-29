@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -91,6 +92,9 @@ public class JsonApiReaderTest {
         assertTrue(comments.size() == 2);
         People author = responseAdapter.getIncluded(article, "author", People.class);
         assertNotNull(author);
+        assertFalse(responseAdapter.hasRelationships(author, "author"));
+        assertTrue(responseAdapter.hasRelationships(comments.get(0), "author"));
+        assertTrue(responseAdapter.hasRelationships(comments.get(1), "author"));
     }
 
     @Test

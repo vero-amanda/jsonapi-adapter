@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.nextmatch.vero.jsonapiadapter.JsonApiConstants;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
+import com.nextmatch.vero.jsonapiadapter.model.Links;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 import com.nextmatch.vero.jsonapiadapter.model.ResourceIdentifier;
 
@@ -17,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GsonAdapter#fromJsonApi 에서 반환되는 ResponseAdapter.
+ * 객체가 생성될때 Top Level tags 를 Parsing 하고,
+ * Optional 로 추가될 수 있는 tags(included, links, meta, jsonapi...) 는 Type 을 매개변수로 받아 동적으로 구성할 수 있도록 구현.
  * @author vero
  * @since 2016. 11. 27.
  */
@@ -28,14 +32,34 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
 
     private List<T> _data;
     private Map<ResourceIdentifier, Map<String, JsonObject>> _relationships;
+    private List<JsonObject> _included;
     private List<Error> _errors;
 
     JsonApiResponseAdapter(Gson context, TypeToken<T> typeToken, JsonObject jsonApiObject) {
         this._jsonApiObject = jsonApiObject;
         this._typeToken = typeToken;
         this._reader = new JsonApiReader(context);
+        this._data = new ArrayList<>();
+        this._relationships = new LinkedHashMap<>();
+        this._included = new ArrayList<>();
 
         readTopLevel();
+    }
+
+    /**
+     * Top Level tag 정보를 읽는다
+     * data, error, included
+     */
+    private void readTopLevel() {
+        if (_reader.hasData(_jsonApiObject)) {
+            _reader.readData(_data, _relationships, _jsonApiObject, _typeToken);
+        } else if (_reader.hasErrors(_jsonApiObject)) {
+            _errors = _reader.readErrors(_jsonApiObject);
+        }
+
+        if (_reader.hasIncluded(_jsonApiObject)) {
+            _included = _reader.readIncluded(_jsonApiObject);
+        }
     }
 
     /**
@@ -80,10 +104,15 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      * Relationships 정보가 존재하는지 확인.
      * @param resource      ResourceIdentifier를 가지는 Resource Instance
      * @param name          Relationship name
+     * @param <R>           Resource Type
      * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
      */
-    public boolean hasRelationships(T resource, String name) {
-        return hasRelationships(resource.getIdentifier(), name, false);
+    public <R extends Resource> boolean hasRelationships(R resource, String name) {
+        if (_typeToken.getRawType().isInstance(resource)) {
+            return hasRelationshipsFromData(resource.getIdentifier(), name);
+        } else {
+            return hasRelationshipsFromIncluded(resource.getIdentifier(), name);
+        }
     }
 
     /**
@@ -128,6 +157,22 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         return null;
     }
 
+    public <L extends Links> Links getLinks(Class<L> classOfLinks) {
+        return getLinks(null, classOfLinks);
+    }
+
+    public <L extends Links> Links getLinks(Resource resource, Class<L> classOfLinks) {
+        if (resource == null) {
+            return _reader.readLinks(_jsonApiObject, classOfLinks);
+        } else if (_typeToken.getRawType().isInstance(resource)) {
+
+        } else {
+
+        }
+
+        return null;
+    }
+
     /**
      * Error 목록 반환.
      * @return Error 목록.
@@ -142,24 +187,8 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Relationships 정보가 존재하는지 확인.
-     * @param identifier    ResourceIdentifier
-     * @param name          Relationship name
-     * @param isIncluded    Included Resource 여부
-     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
-     */
-    boolean hasRelationships(ResourceIdentifier identifier, String name, boolean isIncluded) {
-        if (isIncluded) {
-            // TODO: 2016. 11. 28. included 에서 relationships 검사..
-            return false;
-        } else {
-            return hasRelationshipsFromData(identifier, name);
-        }
-    }
-
-    /**
      * 기본 Data에 Relationships 정보가 존재하는지 확인.
-     * @param identifier    ResourceIdentifier
+     * @param identifier    Data ResourceIdentifier
      * @param name          Relationship name
      * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
      */
@@ -174,55 +203,22 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Top Level Tag parsing.
-     * data, error
+     * Included Data Relationships 정보가 존재하는지 확인.
+     * @param identifier    Included ResourceIdentifier
+     * @param name          Relationship name
+     * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
-    private void readTopLevel() {
-        if (_jsonApiObject.has(JsonApiConstants.NAME_DATA)) {
-            _data = new ArrayList<>();
-            _relationships = new LinkedHashMap<>();
-
-            JsonElement dataJsonElement = _jsonApiObject.get(JsonApiConstants.NAME_DATA);
-            if (dataJsonElement.isJsonArray()) {
-                for (int i = 0; i < dataJsonElement.getAsJsonArray().size(); i++) {
-                    JsonObject dataJsonObject = dataJsonElement.getAsJsonArray().get(i).getAsJsonObject();
-                    readData(dataJsonObject);
-                }
-            } else {
-                readData(dataJsonElement.getAsJsonObject());
+    private boolean hasRelationshipsFromIncluded(ResourceIdentifier identifier, String name) {
+        if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
+        JsonArray jsonArray = _jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
+        JsonObject includedObject = _reader.findIncludedJsonObjectFromResourceIdentifier(jsonArray, identifier);
+        if (includedObject != null) {
+            if (_reader.hasRelationships(includedObject)) {
+                Map<String, JsonObject> relationships = _reader.readRelationships(includedObject);
+                return relationships != null && relationships.containsKey(name);
             }
-        } else if (_jsonApiObject.has(JsonApiConstants.NAME_ERRORS)) {
-            JsonArray errorJsonArray = _jsonApiObject.get(JsonApiConstants.NAME_ERRORS).getAsJsonArray();
-            readErrors(errorJsonArray);
         }
-    }
-
-    /**
-     * Top Level Data tag parsing.
-     * @param jsonObject    Data object
-     */
-    private void readData(JsonObject jsonObject) {
-        T instance = readResource(jsonObject, _typeToken);
-        Map<String, JsonObject> relationships = _reader.readRelationships(jsonObject);
-
-        _data.add(instance);
-        if (relationships != null)
-            _relationships.put(instance.getIdentifier(), relationships);
-    }
-
-    /**
-     * Resource parsing
-     * @param jsonObject    Resource tag jsonObject
-     * @param typeToken     Resource TypeToken
-     * @param <R>           Resource class
-     * @return Resource instance
-     */
-    private <R extends Resource> R readResource(JsonObject jsonObject, TypeToken<R> typeToken) {
-        return _reader.readResource(jsonObject, typeToken);
-    }
-
-    private void readErrors(JsonArray jsonArray) {
-        _errors = _reader.readErrors(jsonArray);
+        return false;
     }
 
 }
