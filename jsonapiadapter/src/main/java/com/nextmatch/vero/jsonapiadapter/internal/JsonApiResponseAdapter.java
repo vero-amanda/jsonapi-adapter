@@ -86,6 +86,14 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         return hasRelationships(resource.getIdentifier(), name, false);
     }
 
+    /**
+     * Included 의 Array Data 를 Collection 으로 반환.
+     * @param parentResource     기본 Data Resource 객체
+     * @param name               Relationships 에 정의된 Name
+     * @param classOfResource    Array Data 의 Type
+     * @param <R>                Array Data 의 Type
+     * @return Collection Included Data
+     */
     public <R extends Resource> List<R> getCollectionIncluded(T parentResource, String name, Class<R> classOfResource) {
         if (hasRelationships(parentResource, name)) {
             Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
@@ -93,17 +101,39 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
             if (!dataJsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
             if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
 
-            List<ResourceIdentifier> relationshipIdentifiers = _reader.relationshipsToIdentifierList(dataJsonElement.getAsJsonArray());
-            System.out.println("relationshipIdentifiers size : " + relationshipIdentifiers.size());
-
-            JsonArray jsonArray = _jsonApiObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
+            return _reader.readCollectionIncluded(_jsonApiObject, dataJsonElement.getAsJsonArray(), classOfResource);
         }
 
         return null;
     }
 
+    /**
+     * Included 의 Object Data 를 반환.
+     * @param parentResource     기본 Data Resource 객체
+     * @param name               Relationships 에 정의된 Name
+     * @param classOfResource    Data 의 Type
+     * @param <R>                Data 의 Type
+     * @return Included Data
+     */
     public <R extends Resource> R getIncluded(T parentResource, String name, Class<R> classOfResource) {
+        if (hasRelationships(parentResource, name)) {
+            Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
+            JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
+            if (!dataJsonElement.isJsonObject()) throw new JsonApiParseException(name + " relationship은 object가 아님");
+            if (!_jsonApiObject.has(JsonApiConstants.NAME_INCLUDED)) throw new JsonApiParseException("included tag가 존재하지 않음");
+
+            return _reader.readIncluded(_jsonApiObject, dataJsonElement.getAsJsonObject(), classOfResource);
+        }
+
         return null;
+    }
+
+    /**
+     * Error 목록 반환.
+     * @return Error 목록.
+     */
+    public List<Error> getErrors() {
+        return this._errors;
     }
 
     @Override
@@ -118,7 +148,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      * @param isIncluded    Included Resource 여부
      * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
      */
-    private  boolean hasRelationships(ResourceIdentifier identifier, String name, boolean isIncluded) {
+    boolean hasRelationships(ResourceIdentifier identifier, String name, boolean isIncluded) {
         if (isIncluded) {
             // TODO: 2016. 11. 28. included 에서 relationships 검사..
             return false;
@@ -127,6 +157,12 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         }
     }
 
+    /**
+     * 기본 Data에 Relationships 정보가 존재하는지 확인.
+     * @param identifier    ResourceIdentifier
+     * @param name          Relationship name
+     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     */
     private boolean hasRelationshipsFromData(ResourceIdentifier identifier, String name) {
         if (_relationships != null && !_relationships.isEmpty()) {
             if (_relationships.containsKey(identifier)) {
@@ -138,15 +174,8 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Error 목록 반환.
-     * @return Error 목록.
-     */
-    public List<Error> getErrors() {
-        return this._errors;
-    }
-
-    /**
      * Top Level Tag parsing.
+     * data, error
      */
     private void readTopLevel() {
         if (_jsonApiObject.has(JsonApiConstants.NAME_DATA)) {

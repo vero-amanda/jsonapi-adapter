@@ -9,6 +9,7 @@ import com.nextmatch.vero.jsonapiadapter.model.Article;
 import com.nextmatch.vero.jsonapiadapter.model.Comment;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
+import com.nextmatch.vero.jsonapiadapter.model.People;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -84,8 +85,12 @@ public class JsonApiReaderTest {
     @Test
     public void included() throws Exception {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
+        Article article = responseAdapter.getData();
         assertTrue(responseAdapter.hasRelationships("comments"));
-        responseAdapter.getCollectionIncluded(responseAdapter.getData(), "comments", Comment.class);
+        List<Comment> comments = responseAdapter.getCollectionIncluded(article, "comments", Comment.class);
+        assertTrue(comments.size() == 2);
+        People author = responseAdapter.getIncluded(article, "author", People.class);
+        assertNotNull(author);
     }
 
     @Test

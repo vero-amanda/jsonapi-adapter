@@ -9,6 +9,6 @@ import com.nextmatch.vero.jsonapiadapter.annotation.Type;
 @Type("comment")
 public class Comment extends Resource {
 
-    public String message;
+    public String body;
 
 }
