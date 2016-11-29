@@ -10,6 +10,7 @@ import com.nextmatch.vero.jsonapiadapter.model.Comment;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 import com.nextmatch.vero.jsonapiadapter.model.People;
+import com.nextmatch.vero.jsonapiadapter.model.SimpleLinks;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -95,6 +96,24 @@ public class JsonApiReaderTest {
         assertFalse(responseAdapter.hasRelationships(author, "author"));
         assertTrue(responseAdapter.hasRelationships(comments.get(0), "author"));
         assertTrue(responseAdapter.hasRelationships(comments.get(1), "author"));
+    }
+
+    @Test
+    public void links() throws Exception {
+        JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
+        SimpleLinks rootLinks = responseAdapter.getLinks(SimpleLinks.class);
+        Article article = responseAdapter.getData();
+        SimpleLinks articleLinks = responseAdapter.getDataLinks(article, SimpleLinks.class);
+        SimpleLinks relationshipsLinks = responseAdapter.getRelationshipsLinks(article, "author", SimpleLinks.class);
+
+        assertNotNull(rootLinks);
+        assertNotNull(articleLinks);
+        assertNotNull(relationshipsLinks);
+
+        People author = responseAdapter.getIncluded(article, "author", People.class);
+        SimpleLinks includedLinks = responseAdapter.getIncludedLinks(author, SimpleLinks.class);
+
+        assertNotNull(includedLinks);
     }
 
     @Test

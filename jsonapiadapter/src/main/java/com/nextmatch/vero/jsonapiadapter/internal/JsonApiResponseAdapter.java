@@ -1,7 +1,6 @@
 package com.nextmatch.vero.jsonapiadapter.internal;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -156,20 +155,44 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
         return null;
     }
 
-    public <L extends Links> Links getLinks(Class<L> classOfLinks) {
-        return getLinks(null, classOfLinks);
+    /**
+     * TopLevel Links 정보 반환
+     * @param classOfLinks    Parsing 할 Links Type
+     * @param <L>             Parsing 할 Links Type
+     * @return Links 객체.
+     */
+    public <L extends Links> L getLinks(Class<L> classOfLinks) {
+        return _reader.readLinks(_jsonApiObject, classOfLinks);
     }
 
-    public <L extends Links> Links getLinks(Resource resource, Class<L> classOfLinks) {
-        if (resource == null) {
-            return _reader.readLinks(_jsonApiObject, classOfLinks);
-        } else if (_typeToken.getRawType().isInstance(resource)) {
+    /**
+     * Data Resource Links 정보 반환
+     * @param classOfLinks    Parsing 할 Links Type
+     * @param <L>             Parsing 할 Links Type
+     * @return Links 객체.
+     */
+    public <L extends Links> L getDataLinks(T resource, Class<L> classOfLinks) {
+        return _reader.readDataLinks(resource, _jsonApiObject, classOfLinks);
+    }
 
-        } else {
+    /**
+     * Data Resource Relationships Links 정보 반환
+     * @param classOfLinks    Parsing 할 Links Type
+     * @param <L>             Parsing 할 Links Type
+     * @return Links 객체.
+     */
+    public <L extends Links> L getRelationshipsLinks(T resource, String name, Class<L> classOfLinks) {
+        return _reader.readLinks(_relationships.get(resource.getIdentifier()).get(name), classOfLinks);
+    }
 
-        }
-
-        return null;
+    /**
+     * Included Resource Links 정보 반환
+     * @param classOfLinks    Parsing 할 Links Type
+     * @param <L>             Parsing 할 Links Type
+     * @return Links 객체.
+     */
+    public <L extends Links> L getIncludedLinks(Resource resource, Class<L> classOfLinks) {
+        return _reader.readIncludedLinks(resource, _included, classOfLinks);
     }
 
     /**
