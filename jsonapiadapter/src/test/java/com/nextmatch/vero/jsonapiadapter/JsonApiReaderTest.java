@@ -2,7 +2,7 @@ package com.nextmatch.vero.jsonapiadapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nextmatch.vero.jsonapiadapter.internal.GsonAdapter;
+import com.nextmatch.vero.jsonapiadapter.gson.GsonAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiTypeAdapterFactory;
 import com.nextmatch.vero.jsonapiadapter.model.Article;
@@ -11,11 +11,19 @@ import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 import com.nextmatch.vero.jsonapiadapter.model.People;
 import com.nextmatch.vero.jsonapiadapter.model.SimpleLinks;
+import com.nextmatch.vero.jsonapiadapter.retrofit.JsonApiConverterFactory;
+import com.nextmatch.vero.jsonapiadapter.retrofit.RetrofitJsonApiHelper;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,13 +36,30 @@ import static org.junit.Assert.assertTrue;
 public class JsonApiReaderTest {
 
     private GsonAdapter _gsonAdapter;
+    private ReaderTestService _service;
+    private MockWebServer _server;
 
     @Before
     public void setUp() throws Exception {
+        _server = new MockWebServer();
+        _server.start();
+
         Gson gson = new GsonBuilder()
                 .registerTypeAdapterFactory(new JsonApiTypeAdapterFactory()).create();
 
         _gsonAdapter = new GsonAdapter(gson);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(_server.url("/").toString())
+                .addConverterFactory(JsonApiConverterFactory.create(gson))
+                .build();
+
+        _service = retrofit.create(ReaderTestService.class);
+    }
+
+    @After
+    public void destroy() throws Exception {
+        _server.shutdown();
     }
 
     @Test
@@ -123,6 +148,27 @@ public class JsonApiReaderTest {
             List<Error> errors = responseAdapter.getErrors();
             assertNotNull(errors);
             assertTrue(errors.size() == 1);
+        }
+    }
+
+    @Test
+    public void retrofitResponse() throws Exception {
+        _server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setBody(JsonApiStrings.simpleSingleResource));
+
+        Response<Article> response = _service.singleResource().execute();
+        if (response.isSuccessful()) {
+            JsonApiResponseAdapter<Article> responseAdapter = RetrofitJsonApiHelper.getJsonApiAdapterFromResponse(response);
+
+            System.out.println(responseAdapter.getJsonApiObject().toString());
+            if (responseAdapter.isSuccess()) {
+                Article article = responseAdapter.getData();
+                assertNotNull(article);
+                assertNotNull(article.getIdentifier());
+                assertTrue(article.getIdentifier().getId().equals("1"));
+                assertTrue(article.getIdentifier().getType().equals("articles"));
+            }
         }
     }
 

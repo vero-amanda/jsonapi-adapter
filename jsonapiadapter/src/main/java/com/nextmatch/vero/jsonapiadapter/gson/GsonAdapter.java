@@ -1,8 +1,9 @@
-package com.nextmatch.vero.jsonapiadapter.internal;
+package com.nextmatch.vero.jsonapiadapter.gson;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.Primitives;
+import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 
 import java.lang.reflect.Type;
@@ -22,10 +23,6 @@ public class GsonAdapter {
     @SuppressWarnings("unchecked")
     public <T extends Resource> JsonApiResponseAdapter<T> fromJsonApi(String jsonApi, Class<T> classOfResource) throws JsonSyntaxException {
         return Primitives.wrap(JsonApiResponseAdapter.class).cast(_context.fromJson(jsonApi, (Type) classOfResource));
-    }
-
-    public <T> T fromJson(String json, Class<T> classOfT) throws JsonSyntaxException {
-        return _context.fromJson(json, classOfT);
     }
 
 }

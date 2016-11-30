@@ -22,6 +22,11 @@ import java.util.Map;
  */
 public class ConverterUtils {
 
+    static boolean isJsonApiAdapterAssignable(TypeToken typeToken) {
+        return JsonApiAdapter.class.isAssignableFrom(typeToken.getRawType());
+
+    }
+
     /**
      * ResourceTypeAdapter를 사용할 TypeToken인지 확인.
      * Collection인 경우 ElementType를 확인.

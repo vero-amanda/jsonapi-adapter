@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.nextmatch.vero.jsonapiadapter.JsonApiConstants;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 import com.nextmatch.vero.jsonapiadapter.model.Links;
@@ -89,21 +88,21 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
 
     /**
      * Relationships 정보가 존재하는지 확인.
-     * 첫번째 Data를 검사한다
+     * 첫번째 Data 를 검사한다
      * @param name    Relationship name
-     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
     public boolean hasRelationships(String name) {
-        if (getData() == null) throw new JsonApiParseException("Data도 없는데 무슨짓잉가");
+        if (getData() == null) throw new JsonApiParseException("Data tag does not exist.");
         return hasRelationships(getData(), name);
     }
 
     /**
      * Relationships 정보가 존재하는지 확인.
-     * @param resource      ResourceIdentifier를 가지는 Resource Instance
+     * @param resource      ResourceIdentifier 를 가지는 Resource Instance
      * @param name          Relationship name
      * @param <R>           Resource Type
-     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
     public <R extends Resource> boolean hasRelationships(R resource, String name) {
         if (_typeToken.getRawType().isInstance(resource)) {
@@ -124,9 +123,9 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     public <R extends Resource> List<R> getIncludedCollection(T parentResource, String name, Class<R> classOfResource) {
         if (hasRelationships(parentResource, name)) {
             Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
-            JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
-            if (!dataJsonElement.isJsonArray()) throw new JsonApiParseException(name + " relationship은 array가 아님");
-            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
+            JsonElement dataJsonElement = _reader.getData(relationshipsMap.get(name));
+            if (!dataJsonElement.isJsonArray()) throw new JsonApiParseException(name + " : Relationship is not array.");
+            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("Included tag does not exist.");
 
             return _reader.readIncludedCollection(_included, dataJsonElement.getAsJsonArray(), classOfResource);
         }
@@ -145,9 +144,9 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     public <R extends Resource> R getIncluded(T parentResource, String name, Class<R> classOfResource) {
         if (hasRelationships(parentResource, name)) {
             Map<String, JsonObject> relationshipsMap = _relationships.get(parentResource.getIdentifier());
-            JsonElement dataJsonElement = relationshipsMap.get(name).get(JsonApiConstants.NAME_DATA);
-            if (!dataJsonElement.isJsonObject()) throw new JsonApiParseException(name + " relationship은 object가 아님");
-            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
+            JsonElement dataJsonElement = _reader.getData(relationshipsMap.get(name));
+            if (!dataJsonElement.isJsonObject()) throw new JsonApiParseException(name + " : Relationship is not array.");
+            if (_included == null || _included.isEmpty()) throw new JsonApiParseException("Included tag does not exist.");
 
             return _reader.readIncluded(_included, dataJsonElement.getAsJsonObject(), classOfResource);
         }
@@ -209,10 +208,10 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * 기본 Data에 Relationships 정보가 존재하는지 확인.
+     * 기본 Data 에 Relationships 정보가 존재하는지 확인.
      * @param identifier    Data ResourceIdentifier
      * @param name          Relationship name
-     * @return 매개변수로 받은 Name을 Key값으로 갖고 있는 Relationships 존재여부.
+     * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
     private boolean hasRelationshipsFromData(ResourceIdentifier identifier, String name) {
         if (_relationships != null && !_relationships.isEmpty()) {
@@ -231,7 +230,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      * @return 매개변수로 받은 Name 을 Key 값으로 갖고 있는 Relationships 존재여부.
      */
     private boolean hasRelationshipsFromIncluded(ResourceIdentifier identifier, String name) {
-        if (_included == null || _included.isEmpty()) throw new JsonApiParseException("included tag가 존재하지 않음");
+        if (_included == null || _included.isEmpty()) throw new JsonApiParseException("Included tag does not exist.");
 
         JsonObject includedObject = _reader.findIncludedJsonObjectFromResourceIdentifier(_included, identifier);
         if (includedObject != null) {
@@ -240,6 +239,7 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
                 return relationships != null && relationships.containsKey(name);
             }
         }
+
         return false;
     }
 

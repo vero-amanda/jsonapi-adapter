@@ -1,7 +1,6 @@
 package com.nextmatch.vero.jsonapiadapter.internal;
 
 import com.google.gson.Gson;
-import com.google.gson.InstanceCreator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,7 +12,6 @@ import com.nextmatch.vero.jsonapiadapter.model.Links;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 import com.nextmatch.vero.jsonapiadapter.model.ResourceIdentifier;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -32,34 +30,68 @@ class JsonApiReader {
 
     JsonApiReader(Gson context) {
         this._context = context;
-        this._constructor = new ConstructorConstructor(Collections.<Type, InstanceCreator<?>>emptyMap());
+        this._constructor = new ConstructorConstructor(Collections.emptyMap());
     }
 
+    /**
+     * JsonObject 에 Data tag 가 존재하는지 확인.
+     * @param jsonObject    JsonObject
+     * @return Data tag 존재 여부.
+     */
     boolean hasData(JsonObject jsonObject) {
         return jsonObject.has(JsonApiConstants.NAME_DATA);
     }
 
+    /**
+     * JsonObject 에 Errors tag 가 존재하는지 확인.
+     * @param jsonObject    JsonObject
+     * @return Errors tag 존재 여부.
+     */
     boolean hasErrors(JsonObject jsonObject) {
         return jsonObject.has(JsonApiConstants.NAME_ERRORS);
     }
 
+    /**
+     * JsonObject 에 Relationships tag 가 존재하는지 확인.
+     * @param jsonObject    JsonObject
+     * @return Relationships tag 존재 여부.
+     */
     boolean hasRelationships(JsonObject jsonObject) {
         return jsonObject.has(JsonApiConstants.NAME_RELATIONSHIPS);
     }
 
+    /**
+     * JsonObject 에 Included tag 가 존재하는지 확인.
+     * @param jsonObject    JsonObject
+     * @return Included tag 존재 여부.
+     */
     boolean hasIncluded(JsonObject jsonObject) {
         return jsonObject.has(JsonApiConstants.NAME_INCLUDED);
     }
-
-    boolean hasLinks(JsonObject jsonObject) {
+    /**
+     * JsonObject 에 Links tag 가 존재하는지 확인.
+     * @param jsonObject    JsonObject
+     * @return Links tag 존재 여부.
+     */
+    private boolean hasLinks(JsonObject jsonObject) {
         return jsonObject.has(JsonApiConstants.NAME_LINKS);
     }
 
+    /**
+     * JsonObject 에서 Data tag JsonElement 를 추출 후 반환
+     * @param jsonObject    JsonObject
+     * @return Data tag JsonElement
+     */
     JsonElement getData(JsonObject jsonObject) {
         return jsonObject.get(JsonApiConstants.NAME_DATA);
     }
 
-    JsonArray getIncludedJsonArray(JsonObject jsonObject) {
+    /**
+     * JsonObject 에서 Included tag JsonArray 를 추출 후 반환
+     * @param jsonObject    JsonObject
+     * @return Included tag JsonArray
+     */
+    private JsonArray getIncludedJsonArray(JsonObject jsonObject) {
         return jsonObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
     }
 
@@ -142,6 +174,11 @@ class JsonApiReader {
         return relationships;
     }
 
+    /**
+     * Included Array 를 JsonObject Collection 으로 반환.
+     * @param jsonObject    Included tag 를 포함하고 있는 JsonObject
+     * @return Included JsonObject collection
+     */
     List<JsonObject> readIncluded(JsonObject jsonObject) {
         JsonArray jsonArray = getIncludedJsonArray(jsonObject);
         List<JsonObject> jsonObjects = new ArrayList<>(jsonArray.size());
@@ -196,14 +233,14 @@ class JsonApiReader {
     }
 
     /**
-     * Included JsonObject Collection 에서 ResourceIdentifier 와 같은 Resource Data 를 찾아 반환.
-     * @param includedJsonObjectList    Included JsonObject Collection
-     * @param resourceIdentifier        비교할 ResourceIdentifier
-     * @return ResourceIdentifier 와 동일한 JsonObject
+     * Data JsonObject Collection 에서 ResourceIdentifier 와 같은 Resource Data 를 찾아 반환.
+     * @param datasonObjectList    Data JsonObject collection
+     * @param identifier           비교할 ResourceIdentifier 객체
+     * @return ResourceIdentifier 와 동일한 정보를 가진 Data JsonObject
      */
-    JsonObject findIncludedJsonObjectFromResourceIdentifier(List<JsonObject> includedJsonObjectList, ResourceIdentifier resourceIdentifier) {
-        for (JsonObject jsonObject : includedJsonObjectList) {
-            if (equalsResourceIdentifier(resourceIdentifier, jsonObject)) {
+    JsonObject findIncludedJsonObjectFromResourceIdentifier(List<JsonObject> datasonObjectList, ResourceIdentifier identifier) {
+        for (JsonObject jsonObject : datasonObjectList) {
+            if (equalsResourceIdentifier(identifier, jsonObject)) {
                 return jsonObject;
             }
         }
@@ -211,16 +248,22 @@ class JsonApiReader {
         return null;
     }
 
-    JsonObject findResourceJsonObjectFromResourceIdentifier(JsonElement jsonElement, ResourceIdentifier identifier) {
-        if (jsonElement.isJsonArray()) {
-            for (int i = 0; i < jsonElement.getAsJsonArray().size(); i++) {
-                JsonObject jsonObject = jsonElement.getAsJsonArray().get(i).getAsJsonObject();
+    /**
+     * Data JsonElement 에서 ResourceIdentifier 와 같은 Resource Data 를 찾아 반환.
+     * @param dataJsonElement    Data JsonElement
+     * @param identifier         비교할 ResourceIdentifier 객체
+     * @return ResourceIdentifier 와 동일 정보를 가진 Data JsonObject
+     */
+    private JsonObject findResourceJsonObjectFromResourceIdentifier(JsonElement dataJsonElement, ResourceIdentifier identifier) {
+        if (dataJsonElement.isJsonArray()) {
+            for (int i = 0; i < dataJsonElement.getAsJsonArray().size(); i++) {
+                JsonObject jsonObject = dataJsonElement.getAsJsonArray().get(i).getAsJsonObject();
                 if (equalsResourceIdentifier(identifier, jsonObject))
                     return jsonObject;
             }
-        } else if (jsonElement.isJsonObject()) {
-            if (equalsResourceIdentifier(identifier, jsonElement.getAsJsonObject()))
-                return jsonElement.getAsJsonObject();
+        } else if (dataJsonElement.isJsonObject()) {
+            if (equalsResourceIdentifier(identifier, dataJsonElement.getAsJsonObject()))
+                return dataJsonElement.getAsJsonObject();
         }
         return null;
     }
@@ -281,6 +324,7 @@ class JsonApiReader {
      * @param instance      값이 채워질 Resource Instance
      * @param <T>           Resource Type
      */
+    @SuppressWarnings("Convert2streamapi")
     private <T extends Resource> void readResourceAttributes(JsonObject jsonObject, T instance) {
         for (BoundField boundField : ConverterUtils.getBoundFields(_context, TypeToken.get(instance.getClass())).values()) {
             if (jsonObject.has(boundField.getName())) {
