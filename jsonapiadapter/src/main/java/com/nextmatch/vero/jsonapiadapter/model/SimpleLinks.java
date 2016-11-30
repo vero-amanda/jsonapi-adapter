@@ -18,14 +18,12 @@ public class SimpleLinks implements Links {
     @SerializedName("last")
     private String _last;
 
-    @Override
     public String getSelf() {
-        return _self;
+        return this._self;
     }
 
-    @Override
     public String getRelated() {
-        return _related;
+        return this._related;
     }
 
     public String getNext() {

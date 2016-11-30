@@ -6,8 +6,4 @@ package com.nextmatch.vero.jsonapiadapter.model;
  */
 public interface Links {
 
-    String getSelf();
-
-    String getRelated();
-
 }

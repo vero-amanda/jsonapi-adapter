@@ -9,22 +9,47 @@ import com.google.gson.annotations.SerializedName;
 public class Error {
 
     @SerializedName("links")
-    public SimpleLinks _links;
+    private ErrorLinks _links;
     @SerializedName("source")
-    public Source _source;
-    @SerializedName("meta")
-    public Meta _meta;
+    private Source _source;
 
     @SerializedName("id")
-    public String _id;
+    private String _id;
     @SerializedName("status")
-    public String _status;
+    private String _status;
     @SerializedName("code")
-    public String _code;
+    private String _code;
     @SerializedName("title")
-    public String _title;
+    private String _title;
     @SerializedName("detail")
-    public String _detail;
+    private String _detail;
 
+    public ErrorLinks getLinks() {
+        return _links;
+    }
+
+    public Source getSource() {
+        return _source;
+    }
+
+    public String getId() {
+        return _id;
+    }
+
+    public String getStatus() {
+        return _status;
+    }
+
+    public String getCode() {
+        return _code;
+    }
+
+    public String getTitle() {
+        return _title;
+    }
+
+    public String getDetail() {
+        return _detail;
+    }
 
 }
