@@ -10,6 +10,7 @@ import com.nextmatch.vero.jsonapiadapter.model.Comment;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.JsonApiParseException;
 import com.nextmatch.vero.jsonapiadapter.model.People;
+import com.nextmatch.vero.jsonapiadapter.model.Person;
 import com.nextmatch.vero.jsonapiadapter.model.SimpleLinks;
 import com.nextmatch.vero.jsonapiadapter.retrofit.JsonApiConverterFactory;
 import com.nextmatch.vero.jsonapiadapter.retrofit.RetrofitJsonApiHelper;
@@ -24,6 +25,9 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +56,7 @@ public class JsonApiReaderTest {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(_server.url("/").toString())
                 .addConverterFactory(JsonApiConverterFactory.create(gson))
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
 
         _service = retrofit.create(ReaderTestService.class);
@@ -160,8 +165,6 @@ public class JsonApiReaderTest {
         Response<Article> response = _service.singleResource().execute();
         if (response.isSuccessful()) {
             JsonApiResponseAdapter<Article> responseAdapter = RetrofitJsonApiHelper.getJsonApiAdapterFromResponse(response);
-
-            System.out.println(responseAdapter.getJsonApiObject().toString());
             if (responseAdapter.isSuccess()) {
                 Article article = responseAdapter.getData();
                 assertNotNull(article);
@@ -169,6 +172,43 @@ public class JsonApiReaderTest {
                 assertTrue(article.getIdentifier().getId().equals("1"));
                 assertTrue(article.getIdentifier().getType().equals("articles"));
             }
+        }
+    }
+
+    @Test
+    public void retrofitObservable() throws Exception {
+        _server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setBody(JsonApiStrings.simpleSingleResource));
+
+        Observable<Article> response = _service.singleResourceRx();
+        response.subscribeOn(Schedulers.io())
+                .subscribe(
+                        resource -> {
+                            JsonApiResponseAdapter<Article> responseAdapter = RetrofitJsonApiHelper.getJsonApiAdapterFromResource(resource);
+
+                            Article article = responseAdapter.getData();
+                            assertNotNull(article);
+                            assertNotNull(article.getIdentifier());
+                            assertTrue(article.getIdentifier().getId().equals("1"));
+                            assertTrue(article.getIdentifier().getType().equals("articles"));
+                        },
+                        throwable -> {
+
+                        }
+                );
+    }
+
+    @Test
+    public void retrofitJson() throws Exception {
+        _server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setBody(JsonStrings.arrayTest));
+
+        Response<List<Person>> response = _service.people().execute();
+        if (response.isSuccessful()) {
+            List<Person> people = response.body();
+            assertTrue(people.size() == 3);
         }
     }
 

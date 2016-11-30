@@ -17,4 +17,9 @@ public final class RetrofitJsonApiHelper {
         return Primitives.wrap(JsonApiResponseAdapter.class).cast(response.body());
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Resource> JsonApiResponseAdapter<T> getJsonApiAdapterFromResource(Resource resource) {
+        return Primitives.wrap(JsonApiResponseAdapter.class).cast(resource);
+    }
+
 }
