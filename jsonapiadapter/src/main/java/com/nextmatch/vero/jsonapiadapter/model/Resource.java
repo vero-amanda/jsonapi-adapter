@@ -1,10 +1,12 @@
 package com.nextmatch.vero.jsonapiadapter.model;
 
+import com.nextmatch.vero.jsonapiadapter.internal.ResourceProvider;
+
 /**
  * @author vero
  * @since 2016. 11. 16.
  */
-public class Resource {
+public class Resource implements ResourceProvider {
 
     private transient ResourceIdentifier _identifier;
 

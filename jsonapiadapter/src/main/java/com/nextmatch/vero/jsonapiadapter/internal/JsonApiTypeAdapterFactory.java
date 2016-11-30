@@ -20,12 +20,12 @@ public class JsonApiTypeAdapterFactory implements TypeAdapterFactory {
     @SuppressWarnings("unchecked")
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        if (!ConverterUtils.isResourceAssignable(type)) return null;
+        if (!ConverterUtils.isResourceProviderAssignable(type)) return null;
 
         return new Adapter(gson, type);
     }
 
-    private static class Adapter<T extends Resource> extends TypeAdapter<JsonApiAdapter> {
+    private static class Adapter<T extends Resource> extends TypeAdapter<ResourceProvider> {
 
         private final Gson _context;
         private final TypeToken<T> _typeToken;
@@ -36,12 +36,21 @@ public class JsonApiTypeAdapterFactory implements TypeAdapterFactory {
         }
 
         @Override
-        public void write(JsonWriter out, JsonApiAdapter value) throws IOException {
-            _context.toJson(value.getJsonApiObject(), out);
+        public void write(JsonWriter out, ResourceProvider value) throws IOException {
+            if (JsonApiRequestAdapter.class.isInstance(value)) {
+                JsonApiRequestAdapter adapter = JsonApiRequestAdapter.class.cast(value);
+                _context.toJson(adapter.getJsonApiObject(), out);
+                System.out.println("write >> JsonApiAdapter");
+            } else {
+                Resource resource = Resource.class.cast(value);
+                _context.toJson(resource, resource.getClass(), out);
+                System.out.println("write >> Resource");
+            }
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public JsonApiAdapter read(JsonReader in) throws IOException {
+        public ResourceProvider read(JsonReader in) throws IOException {
             JsonObject jsonApi = _context.fromJson(in, JsonObject.class);
             return new JsonApiResponseAdapter<>(_context, _typeToken, jsonApi);
         }

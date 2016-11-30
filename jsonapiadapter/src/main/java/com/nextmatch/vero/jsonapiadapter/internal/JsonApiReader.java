@@ -23,7 +23,7 @@ import java.util.Map;
  * @author vero
  * @since 2016. 11. 28.
  */
-class JsonApiReader {
+class JsonApiReader implements JsonApiConstants {
 
     private Gson _context;
     private ConstructorConstructor _constructor;
@@ -39,7 +39,7 @@ class JsonApiReader {
      * @return Data tag 존재 여부.
      */
     boolean hasData(JsonObject jsonObject) {
-        return jsonObject.has(JsonApiConstants.NAME_DATA);
+        return jsonObject.has(NAME_DATA);
     }
 
     /**
@@ -48,7 +48,7 @@ class JsonApiReader {
      * @return Errors tag 존재 여부.
      */
     boolean hasErrors(JsonObject jsonObject) {
-        return jsonObject.has(JsonApiConstants.NAME_ERRORS);
+        return jsonObject.has(NAME_ERRORS);
     }
 
     /**
@@ -57,7 +57,7 @@ class JsonApiReader {
      * @return Relationships tag 존재 여부.
      */
     boolean hasRelationships(JsonObject jsonObject) {
-        return jsonObject.has(JsonApiConstants.NAME_RELATIONSHIPS);
+        return jsonObject.has(NAME_RELATIONSHIPS);
     }
 
     /**
@@ -66,7 +66,7 @@ class JsonApiReader {
      * @return Included tag 존재 여부.
      */
     boolean hasIncluded(JsonObject jsonObject) {
-        return jsonObject.has(JsonApiConstants.NAME_INCLUDED);
+        return jsonObject.has(NAME_INCLUDED);
     }
     /**
      * JsonObject 에 Links tag 가 존재하는지 확인.
@@ -74,7 +74,7 @@ class JsonApiReader {
      * @return Links tag 존재 여부.
      */
     private boolean hasLinks(JsonObject jsonObject) {
-        return jsonObject.has(JsonApiConstants.NAME_LINKS);
+        return jsonObject.has(NAME_LINKS);
     }
 
     /**
@@ -83,7 +83,7 @@ class JsonApiReader {
      * @return Data tag JsonElement
      */
     JsonElement getData(JsonObject jsonObject) {
-        return jsonObject.get(JsonApiConstants.NAME_DATA);
+        return jsonObject.get(NAME_DATA);
     }
 
     /**
@@ -92,7 +92,7 @@ class JsonApiReader {
      * @return Included tag JsonArray
      */
     private JsonArray getIncludedJsonArray(JsonObject jsonObject) {
-        return jsonObject.get(JsonApiConstants.NAME_INCLUDED).getAsJsonArray();
+        return jsonObject.get(NAME_INCLUDED).getAsJsonArray();
     }
 
     /**
@@ -131,7 +131,7 @@ class JsonApiReader {
      * @return Error Collection
      */
     List<Error> readErrors(JsonObject jsonObject) {
-        JsonArray jsonArray = jsonObject.get(JsonApiConstants.NAME_ERRORS).getAsJsonArray();
+        JsonArray jsonArray = jsonObject.get(NAME_ERRORS).getAsJsonArray();
         List<Error> errors = new ArrayList<>();
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject errorJsonObject = jsonArray.get(i).getAsJsonObject();
@@ -152,8 +152,8 @@ class JsonApiReader {
         T instance = _constructor.get(typeToken).construct();
         instance.setIdentifier(readResourceIdentifier(dataJsonObject));
 
-        if (dataJsonObject.has(JsonApiConstants.NAME_ATTRIBUTES)) {
-            readResourceAttributes(dataJsonObject.get(JsonApiConstants.NAME_ATTRIBUTES).getAsJsonObject(), instance);
+        if (dataJsonObject.has(NAME_ATTRIBUTES)) {
+            readResourceAttributes(dataJsonObject.get(NAME_ATTRIBUTES).getAsJsonObject(), instance);
         }
 
         return instance;
@@ -166,7 +166,7 @@ class JsonApiReader {
      */
     Map<String, JsonObject> readRelationships(JsonObject jsonObject) {
         Map<String, JsonObject> relationships = new LinkedHashMap<>();
-        JsonObject relationship = jsonObject.get(JsonApiConstants.NAME_RELATIONSHIPS).getAsJsonObject();
+        JsonObject relationship = jsonObject.get(NAME_RELATIONSHIPS).getAsJsonObject();
         for (Map.Entry<String, JsonElement> entry : relationship.entrySet()) {
             relationships.put(entry.getKey(), entry.getValue().getAsJsonObject());
         }
@@ -277,7 +277,7 @@ class JsonApiReader {
      */
     <L extends Links> L readLinks(JsonObject jsonObject, Class<L> classOfLinks) {
         if (hasLinks(jsonObject)) {
-            return _context.fromJson(jsonObject.get(JsonApiConstants.NAME_LINKS), classOfLinks);
+            return _context.fromJson(jsonObject.get(NAME_LINKS), classOfLinks);
         }
 
         return null;
@@ -346,9 +346,9 @@ class JsonApiReader {
      * @return type, id 가 일치하는지 여부.
      */
     private boolean equalsResourceIdentifier(ResourceIdentifier identifier, JsonObject dataJsonObject) {
-        if (dataJsonObject.has(JsonApiConstants.NAME_ID) && dataJsonObject.has(JsonApiConstants.NAME_TYPE)) {
-            String id = dataJsonObject.get(JsonApiConstants.NAME_ID).getAsString();
-            String type = dataJsonObject.get(JsonApiConstants.NAME_TYPE).getAsString();
+        if (dataJsonObject.has(NAME_ID) && dataJsonObject.has(NAME_TYPE)) {
+            String id = dataJsonObject.get(NAME_ID).getAsString();
+            String type = dataJsonObject.get(NAME_TYPE).getAsString();
             if (identifier.getId().equals(id) && identifier.getType().equals(type)) {
                 return true;
             }

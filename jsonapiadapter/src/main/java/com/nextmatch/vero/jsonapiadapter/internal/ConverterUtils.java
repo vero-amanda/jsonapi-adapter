@@ -22,22 +22,17 @@ import java.util.Map;
  */
 public class ConverterUtils {
 
-    static boolean isJsonApiAdapterAssignable(TypeToken typeToken) {
-        return JsonApiAdapter.class.isAssignableFrom(typeToken.getRawType());
-
-    }
-
     /**
      * ResourceTypeAdapter를 사용할 TypeToken인지 확인.
      * Collection인 경우 ElementType를 확인.
      * @param typeToken    TypeToken from Gson
      * @return Resource를 상속받았는지 확인
      */
-    static boolean isResourceAssignable(TypeToken typeToken) {
+    static boolean isResourceProviderAssignable(TypeToken typeToken) {
         if (isCollectionAssignableFrom(typeToken)) {
-            return isResourceAssignableFrom(getCollectionElementTypeToken(typeToken));
+            return isResourceProviderAssignableFrom(getCollectionElementTypeToken(typeToken));
         } else {
-            return isResourceAssignableFrom(typeToken);
+            return isResourceProviderAssignableFrom(typeToken);
         }
     }
 
@@ -55,8 +50,8 @@ public class ConverterUtils {
      * @param typeToken    TypeToken from Gson
      * @return Resource 상속 여부
      */
-    private static boolean isResourceAssignableFrom(TypeToken typeToken) {
-        return Resource.class.isAssignableFrom(typeToken.getRawType());
+    private static boolean isResourceProviderAssignableFrom(TypeToken typeToken) {
+        return ResourceProvider.class.isAssignableFrom(typeToken.getRawType());
     }
 
     /**
@@ -110,6 +105,7 @@ public class ConverterUtils {
                 }
                 field.setAccessible(true);
                 java.lang.reflect.Type fieldType = $Gson$Types.resolve(typeToken.getType(), clazz, field.getGenericType());
+                if (ConverterUtils.isResourceProviderAssignable(TypeToken.get(fieldType))) continue;
                 List<String> fieldNames = getFieldNames(context, field);
                 BoundField previous = null;
                 for (int i = 0; i < fieldNames.size(); ++i) {

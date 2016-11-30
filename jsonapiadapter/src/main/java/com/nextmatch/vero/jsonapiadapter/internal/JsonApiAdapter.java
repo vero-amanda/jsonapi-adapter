@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
  * @author vero
  * @since 2016. 11. 27.
  */
-interface JsonApiAdapter {
+interface JsonApiAdapter extends ResourceProvider {
 
     JsonObject getJsonApiObject();
 
