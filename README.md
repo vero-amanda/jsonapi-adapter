@@ -19,7 +19,7 @@ Root build.grald:
 Application build.gradle:
 
     dependencies {
-        compile 'com.github.User:Repo:Tag'
+        compile 'com.github.vero-amanda:JsonApiAdapter:v0.9-beta'
     }
 
 
@@ -42,6 +42,37 @@ Application build.gradle:
 | included | relationships tag | 예 | 아니오 | |
 | included | links tag | 예 | 예 | |
 | 기본 데이터 <br> relationships | links tag | 예 | 예 | |
+
+##사용법
+####JsonApi Resource Object
+```java
+@Type("articles")
+public class Article extends Resource {
+
+    @SerializedName("title")
+    public String title;
+    @SerializedName("body")
+    public String body;
+    public Date created;
+    public Date updated;
+
+}
+```
+
+####fromJsonString
+```java
+Gson gson = new GsonBuilder()
+        .registerTypeAdapterFactory(new JsonApiTypeAdapterFactory()).create();
+
+GsonAdapter gsonAdapter = new GsonAdapter(gson);
+JsonApiResponseAdapter<Article> responseAdapter = gsonAdapter.fromJsonApi(jsonApiString, Article.class);
+if (responseAdapter.isSuccess()) {
+    Article article = responseAdapter.getData();
+// => List<Article> articles = responseAdapter.getDataList(); for Data array
+} else {
+    List<Error> errors = responseAdapter.getErrors();
+}
+```
 
 
 ##License
