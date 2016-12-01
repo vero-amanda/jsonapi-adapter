@@ -9,13 +9,15 @@ import com.nextmatch.vero.jsonapiadapter.internal.ConverterUtils;
  */
 public class ResourceIdentifier {
 
-    public static ResourceIdentifier create(Resource resource, String id) {
+    static ResourceIdentifier create(Resource resource, String id) {
         ResourceIdentifier identifier = new ResourceIdentifier();
         identifier.setType(ConverterUtils.getJsonApiType(resource));
         identifier.setId(id);
 
         return identifier;
     }
+
+    private ResourceIdentifier() {}
 
     @SerializedName("type")
     private String _type;
@@ -45,7 +47,7 @@ public class ResourceIdentifier {
             ResourceIdentifier identifier = ResourceIdentifier.class.cast(obj);
 
             if ((_id != null && identifier.getId() != null && _id.equals(identifier.getId())) &&
-                    (_type != null && identifier.getType() != null && _type.equals(identifier.getType())))
+                    _type.equals(identifier.getType()))
                 return true;
         }
 

@@ -19,19 +19,35 @@ public class SimpleLinks implements Links {
     private String _last;
 
     public String getSelf() {
-        return this._self;
+        return _self;
+    }
+
+    public void setSelf(String self) {
+        _self = self;
     }
 
     public String getRelated() {
-        return this._related;
+        return _related;
+    }
+
+    public void setRelated(String related) {
+        _related = related;
     }
 
     public String getNext() {
-        return this._next;
+        return _next;
+    }
+
+    public void setNext(String next) {
+        _next = next;
     }
 
     public String getLast() {
-        return this._last;
+        return _last;
+    }
+
+    public void setLast(String last) {
+        _last = last;
     }
 
 }
