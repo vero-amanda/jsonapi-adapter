@@ -1,12 +1,13 @@
 package com.nextmatch.vero.jsonapiadapter;
 
+import com.nextmatch.vero.jsonapiadapter.internal.JsonApiRequestAdapter;
 import com.nextmatch.vero.jsonapiadapter.model.Article;
-import com.nextmatch.vero.jsonapiadapter.model.People;
 import com.nextmatch.vero.jsonapiadapter.model.Person;
 
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.POST;
 import rx.Observable;
 
@@ -14,7 +15,7 @@ import rx.Observable;
  * @author vero
  * @since 2016. 11. 30.
  */
-public interface ReaderTestService {
+public interface TestService {
 
     @POST("jsonapi/single/resource")
     Call<Article> singleResource();
@@ -24,5 +25,8 @@ public interface ReaderTestService {
 
     @POST("json/array/peoples")
     Call<List<Person>> people();
+
+    @POST("json/single/resource/article")
+    Call<Article> singleResourceRequest(@Body JsonApiRequestAdapter<Article> request);
 
 }

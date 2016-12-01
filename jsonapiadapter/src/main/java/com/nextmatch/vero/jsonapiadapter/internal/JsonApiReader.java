@@ -9,8 +9,10 @@ import com.google.gson.reflect.TypeToken;
 import com.nextmatch.vero.jsonapiadapter.JsonApiConstants;
 import com.nextmatch.vero.jsonapiadapter.model.Error;
 import com.nextmatch.vero.jsonapiadapter.model.Links;
+import com.nextmatch.vero.jsonapiadapter.model.RelatedLinks;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 import com.nextmatch.vero.jsonapiadapter.model.ResourceIdentifier;
+import com.nextmatch.vero.jsonapiadapter.model.SimpleLinks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import java.util.Map;
 class JsonApiReader implements JsonApiConstants {
 
     private Gson _context;
+    /** Type 정보를 가지고 새로운 Instance 를 생성하기 위한 Class 생성자 제공자 */
     private ConstructorConstructor _constructor;
 
     JsonApiReader(Gson context) {
@@ -152,9 +155,11 @@ class JsonApiReader implements JsonApiConstants {
         T instance = _constructor.get(typeToken).construct();
         instance.setIdentifier(readResourceIdentifier(dataJsonObject));
 
-        if (dataJsonObject.has(NAME_ATTRIBUTES)) {
+        if (dataJsonObject.has(NAME_ATTRIBUTES))
             readResourceAttributes(dataJsonObject.get(NAME_ATTRIBUTES).getAsJsonObject(), instance);
-        }
+
+        if (hasLinks(dataJsonObject))
+            instance.setLinks(readLinks(dataJsonObject));
 
         return instance;
     }
@@ -249,26 +254,6 @@ class JsonApiReader implements JsonApiConstants {
     }
 
     /**
-     * Data JsonElement 에서 ResourceIdentifier 와 같은 Resource Data 를 찾아 반환.
-     * @param dataJsonElement    Data JsonElement
-     * @param identifier         비교할 ResourceIdentifier 객체
-     * @return ResourceIdentifier 와 동일 정보를 가진 Data JsonObject
-     */
-    private JsonObject findResourceJsonObjectFromResourceIdentifier(JsonElement dataJsonElement, ResourceIdentifier identifier) {
-        if (dataJsonElement.isJsonArray()) {
-            for (int i = 0; i < dataJsonElement.getAsJsonArray().size(); i++) {
-                JsonObject jsonObject = dataJsonElement.getAsJsonArray().get(i).getAsJsonObject();
-                if (equalsResourceIdentifier(identifier, jsonObject))
-                    return jsonObject;
-            }
-        } else if (dataJsonElement.isJsonObject()) {
-            if (equalsResourceIdentifier(identifier, dataJsonElement.getAsJsonObject()))
-                return dataJsonElement.getAsJsonObject();
-        }
-        return null;
-    }
-
-    /**
      * Links 정보를 매개변수 받은 타입으로 반환.
      * @param jsonObject      Links 정보를 갖는 JsonObject
      * @param classOfLinks    Parsing 할 Class Type
@@ -281,32 +266,6 @@ class JsonApiReader implements JsonApiConstants {
         }
 
         return null;
-    }
-
-    /**
-     * Resource 의 Links 정보를 찾아 매개변수 받은 타입으로 반환.
-     * @param resource        Links 정보를 갖고 있는 Resource Object
-     * @param jsonObject      JsonApi JsonObject
-     * @param classOfLinks    Parsing 할 Class Type
-     * @param <L>             Parsing 할 Class Type
-     * @return Links 객체.
-     */
-    <L extends Links> L readDataLinks(Resource resource, JsonObject jsonObject, Class<L> classOfLinks) {
-        JsonObject dataJsonObject = findResourceJsonObjectFromResourceIdentifier(getData(jsonObject), resource.getIdentifier());
-        return readLinks(dataJsonObject, classOfLinks);
-    }
-
-    /**
-     * Included Resource 의 Links 정보를 찾아 매개변수 받은 타입으로 반환.
-     * @param resource        Links 정보를 갖고 있는 Resource Object
-     * @param includedList    Included JsonObject Collection
-     * @param classOfLinks    Parsing 할 Class Type
-     * @param <L>             Parsing 할 Class Type
-     * @return Links 객체.
-     */
-    <L extends Links> L readIncludedLinks(Resource resource, List<JsonObject> includedList, Class<L> classOfLinks) {
-        JsonObject dataJsonObject = findIncludedJsonObjectFromResourceIdentifier(includedList, resource.getIdentifier());
-        return readLinks(dataJsonObject, classOfLinks);
     }
 
     /**
@@ -336,6 +295,23 @@ class JsonApiReader implements JsonApiConstants {
                 }
             }
         }
+    }
+
+    /**
+     * Links 정보를 매개변수 받은 타입으로 반환.
+     * @param jsonObject      Links 정보를 갖는 JsonObject
+     * @return Links 객체.
+     */
+    private Links readLinks(JsonObject jsonObject) {
+        if (hasLinks(jsonObject)) {
+            JsonObject linksJsonObject = jsonObject.get(NAME_LINKS).getAsJsonObject();
+            if (linksJsonObject.has(NAME_RELATED) && linksJsonObject.get(NAME_RELATED).isJsonObject())
+                return readLinks(jsonObject, RelatedLinks.class);
+            else
+                return readLinks(jsonObject, SimpleLinks.class);
+        }
+
+        return null;
     }
 
     /**

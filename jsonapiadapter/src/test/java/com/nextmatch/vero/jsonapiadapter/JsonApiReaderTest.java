@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 public class JsonApiReaderTest {
 
     private GsonAdapter _gsonAdapter;
-    private ReaderTestService _service;
+    private TestService _service;
     private MockWebServer _server;
 
     @Before
@@ -59,7 +59,7 @@ public class JsonApiReaderTest {
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
 
-        _service = retrofit.create(ReaderTestService.class);
+        _service = retrofit.create(TestService.class);
     }
 
     @After
@@ -133,17 +133,15 @@ public class JsonApiReaderTest {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
         SimpleLinks rootLinks = responseAdapter.getLinks(SimpleLinks.class);
         Article article = responseAdapter.getData();
-        SimpleLinks articleLinks = responseAdapter.getDataLinks(article, SimpleLinks.class);
         SimpleLinks relationshipsLinks = responseAdapter.getRelationshipsLinks(article, "author", SimpleLinks.class);
 
         assertNotNull(rootLinks);
-        assertNotNull(articleLinks);
+        assertNotNull(article.getLinks());
         assertNotNull(relationshipsLinks);
 
         People author = responseAdapter.getIncluded(article, "author", People.class);
-        SimpleLinks includedLinks = responseAdapter.getIncludedLinks(author, SimpleLinks.class);
 
-        assertNotNull(includedLinks);
+        assertNotNull(author.getLinks());
     }
 
     @Test

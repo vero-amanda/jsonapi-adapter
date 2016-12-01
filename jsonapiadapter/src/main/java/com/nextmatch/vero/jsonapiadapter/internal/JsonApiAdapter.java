@@ -1,6 +1,7 @@
 package com.nextmatch.vero.jsonapiadapter.internal;
 
 import com.google.gson.JsonObject;
+import com.nextmatch.vero.jsonapiadapter.model.ResourceProvider;
 
 /**
  * @author vero

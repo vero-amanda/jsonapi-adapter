@@ -7,6 +7,7 @@ import com.google.gson.internal.Excluder;
 import com.google.gson.reflect.TypeToken;
 import com.nextmatch.vero.jsonapiadapter.annotation.Type;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
+import com.nextmatch.vero.jsonapiadapter.model.ResourceProvider;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

@@ -46,6 +46,8 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     /**
      * Top Level tag 정보를 읽는다
      * data, error, included
+     * Background task 로 response 를 받아 parsing 할 경우 Object를 반환 받기 전에 Top Level 의 주요정보를
+     * parsing 해둬야 동적으로 정보를 추출할때 memory 와 같은 resource 가 덜 소모될 것으로 생각되어 생성자에서 호출하도록 작성.
      */
     private void readTopLevel() {
         if (_reader.hasData(_jsonApiObject)) {
@@ -165,16 +167,6 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Data Resource Links 정보 반환
-     * @param classOfLinks    Parsing 할 Links Type
-     * @param <L>             Parsing 할 Links Type
-     * @return Links 객체.
-     */
-    public <L extends Links> L getDataLinks(T resource, Class<L> classOfLinks) {
-        return _reader.readDataLinks(resource, _jsonApiObject, classOfLinks);
-    }
-
-    /**
      * Data Resource Relationships Links 정보 반환
      * @param classOfLinks    Parsing 할 Links Type
      * @param <L>             Parsing 할 Links Type
@@ -182,16 +174,6 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      */
     public <L extends Links> L getRelationshipsLinks(T resource, String name, Class<L> classOfLinks) {
         return _reader.readLinks(_relationships.get(resource.getIdentifier()).get(name), classOfLinks);
-    }
-
-    /**
-     * Included Resource Links 정보 반환
-     * @param classOfLinks    Parsing 할 Links Type
-     * @param <L>             Parsing 할 Links Type
-     * @return Links 객체.
-     */
-    public <L extends Links> L getIncludedLinks(Resource resource, Class<L> classOfLinks) {
-        return _reader.readIncludedLinks(resource, _included, classOfLinks);
     }
 
     /**

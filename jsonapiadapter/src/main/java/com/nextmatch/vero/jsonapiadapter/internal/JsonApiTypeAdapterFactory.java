@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
+import com.nextmatch.vero.jsonapiadapter.model.ResourceProvider;
 
 import java.io.IOException;
 

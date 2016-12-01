@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Field;
 
 /**
+ * Reflection 을 사용해 Resource instance 를 생성할 경우 instance 의 Field 정보를 저장
  * @author vero
  * @since 2016. 11. 23.
  */

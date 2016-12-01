@@ -4,18 +4,22 @@ import com.google.gson.annotations.SerializedName;
 import com.nextmatch.vero.jsonapiadapter.internal.ConverterUtils;
 
 /**
+ * Resource Type, Id 정보를 저장.
+ * Type 은 Annotation 에 정의된 값을 가져와서 설정하도록 생성자와 setType() 은 internal 로 처리.
  * @author vero
  * @since 2016. 11. 27.
  */
 public class ResourceIdentifier {
 
-    public static ResourceIdentifier create(Resource resource, String id) {
+    static ResourceIdentifier create(Resource resource, String id) {
         ResourceIdentifier identifier = new ResourceIdentifier();
         identifier.setType(ConverterUtils.getJsonApiType(resource));
         identifier.setId(id);
 
         return identifier;
     }
+
+    private ResourceIdentifier() {}
 
     @SerializedName("type")
     private String _type;
@@ -27,7 +31,7 @@ public class ResourceIdentifier {
         return this._type;
     }
 
-    public void setType(String type) {
+    private void setType(String type) {
         this._type = type;
     }
 
@@ -45,7 +49,7 @@ public class ResourceIdentifier {
             ResourceIdentifier identifier = ResourceIdentifier.class.cast(obj);
 
             if ((_id != null && identifier.getId() != null && _id.equals(identifier.getId())) &&
-                    (_type != null && identifier.getType() != null && _type.equals(identifier.getType())))
+                    _type.equals(identifier.getType()))
                 return true;
         }
 
