@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 public class JsonApiReaderTest {
 
     private GsonAdapter _gsonAdapter;
-    private ReaderTestService _service;
+    private TestService _service;
     private MockWebServer _server;
 
     @Before
@@ -59,7 +59,7 @@ public class JsonApiReaderTest {
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
 
-        _service = retrofit.create(ReaderTestService.class);
+        _service = retrofit.create(TestService.class);
     }
 
     @After
