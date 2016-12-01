@@ -133,17 +133,15 @@ public class JsonApiReaderTest {
         JsonApiResponseAdapter<Article> responseAdapter = _gsonAdapter.fromJsonApi(JsonApiStrings.included, Article.class);
         SimpleLinks rootLinks = responseAdapter.getLinks(SimpleLinks.class);
         Article article = responseAdapter.getData();
-        SimpleLinks articleLinks = responseAdapter.getDataLinks(article, SimpleLinks.class);
         SimpleLinks relationshipsLinks = responseAdapter.getRelationshipsLinks(article, "author", SimpleLinks.class);
 
         assertNotNull(rootLinks);
-        assertNotNull(articleLinks);
+        assertNotNull(article.getLinks());
         assertNotNull(relationshipsLinks);
 
         People author = responseAdapter.getIncluded(article, "author", People.class);
-        SimpleLinks includedLinks = responseAdapter.getIncludedLinks(author, SimpleLinks.class);
 
-        assertNotNull(includedLinks);
+        assertNotNull(author.getLinks());
     }
 
     @Test

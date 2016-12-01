@@ -165,16 +165,6 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     }
 
     /**
-     * Data Resource Links 정보 반환
-     * @param classOfLinks    Parsing 할 Links Type
-     * @param <L>             Parsing 할 Links Type
-     * @return Links 객체.
-     */
-    public <L extends Links> L getDataLinks(T resource, Class<L> classOfLinks) {
-        return _reader.readDataLinks(resource, _jsonApiObject, classOfLinks);
-    }
-
-    /**
      * Data Resource Relationships Links 정보 반환
      * @param classOfLinks    Parsing 할 Links Type
      * @param <L>             Parsing 할 Links Type
@@ -182,16 +172,6 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
      */
     public <L extends Links> L getRelationshipsLinks(T resource, String name, Class<L> classOfLinks) {
         return _reader.readLinks(_relationships.get(resource.getIdentifier()).get(name), classOfLinks);
-    }
-
-    /**
-     * Included Resource Links 정보 반환
-     * @param classOfLinks    Parsing 할 Links Type
-     * @param <L>             Parsing 할 Links Type
-     * @return Links 객체.
-     */
-    public <L extends Links> L getIncludedLinks(Resource resource, Class<L> classOfLinks) {
-        return _reader.readIncludedLinks(resource, _included, classOfLinks);
     }
 
     /**
