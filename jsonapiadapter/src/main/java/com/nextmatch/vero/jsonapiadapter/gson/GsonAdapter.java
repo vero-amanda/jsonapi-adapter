@@ -3,6 +3,7 @@ package com.nextmatch.vero.jsonapiadapter.gson;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.Primitives;
+import com.nextmatch.vero.jsonapiadapter.internal.JsonApiRequestAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.model.Resource;
 
@@ -23,6 +24,10 @@ public class GsonAdapter {
     @SuppressWarnings("unchecked")
     public <T extends Resource> JsonApiResponseAdapter<T> fromJsonApi(String jsonApi, Class<T> classOfResource) throws JsonSyntaxException {
         return Primitives.wrap(JsonApiResponseAdapter.class).cast(_context.fromJson(jsonApi, (Type) classOfResource));
+    }
+
+    public <T extends Resource> String toJsonApi(JsonApiRequestAdapter<T> requestAdapter) throws JsonSyntaxException {
+        return requestAdapter.getJsonApiObject().toString();
     }
 
 }

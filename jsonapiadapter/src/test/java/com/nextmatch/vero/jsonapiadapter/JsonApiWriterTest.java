@@ -2,6 +2,7 @@ package com.nextmatch.vero.jsonapiadapter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nextmatch.vero.jsonapiadapter.gson.GsonAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiRequestAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiResponseAdapter;
 import com.nextmatch.vero.jsonapiadapter.internal.JsonApiTypeAdapterFactory;
@@ -73,6 +74,7 @@ public class JsonApiWriterTest {
     @Test
     public void nullResource() throws Exception {
         JsonApiRequestAdapter<Article> requestAdapter = new JsonApiRequestAdapter<>(_context);
+        System.out.println(new GsonAdapter(_context).toJsonApi(requestAdapter));
         assertNotNull(requestAdapter.getJsonApiObject());
     }
 
@@ -82,6 +84,8 @@ public class JsonApiWriterTest {
         article.setLinks(createSimpleLinks("http://google.com"));
 
         JsonApiRequestAdapter<Article> requestAdapter = new JsonApiRequestAdapter<>(_context, article);
+        System.out.println(new GsonAdapter(_context).toJsonApi(requestAdapter));
+
         assertNotNull(requestAdapter.getJsonApiObject());
     }
 

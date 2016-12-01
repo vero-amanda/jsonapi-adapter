@@ -59,7 +59,7 @@ public class Article extends Resource {
 }
 ```
 
-####fromJsonString
+####fromJsonApi
 ```java
 Gson gson = new GsonBuilder()
         .registerTypeAdapterFactory(new JsonApiTypeAdapterFactory()).create();
@@ -74,6 +74,14 @@ if (responseAdapter.isSuccess()) {
 } else {
     List<Error> errors = responseAdapter.getErrors();
 }
+```
+
+####toJsonApi
+```java
+JsonApiRequestAdapter<Article> requestAdapter = new JsonApiRequestAdapter<>(_context, article);
+System.out.println(new GsonAdapter(_context).toJsonApi(requestAdapter));
+// => {"data":{"type":"articles","attributes":{"title":"title single resource","body":"body single resource"},"links":{"self":"http://google.com"}}}
+
 ```
 
 ####Retrofit
@@ -107,7 +115,6 @@ Gson gson = new GsonBuilder()
 Retrofit retrofit = new Retrofit.Builder()
         .baseUrl(server.url("/").toString())
         .addConverterFactory(JsonApiConverterFactory.create(gson))
-        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
         .build();
 
 TestService service = retrofit.create(TestService.class);
