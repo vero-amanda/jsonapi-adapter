@@ -68,12 +68,73 @@ GsonAdapter gsonAdapter = new GsonAdapter(gson);
 JsonApiResponseAdapter<Article> responseAdapter = gsonAdapter.fromJsonApi(jsonApiString, Article.class);
 if (responseAdapter.isSuccess()) {
     Article article = responseAdapter.getData();
+    SimpleLinks links = (SimpleLinks) article.getLinks();
+    People people = responseAdapter.getIncluded(article, "people", People.class);
 // => List<Article> articles = responseAdapter.getDataList(); for Data array
 } else {
     List<Error> errors = responseAdapter.getErrors();
 }
 ```
 
+####Retrofit
+###### 1. Response
+```java
+Gson gson = new GsonBuilder()
+        .registerTypeAdapterFactory(new JsonApiTypeAdapterFactory()).create();
+
+Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(server.url("/").toString())
+        .addConverterFactory(JsonApiConverterFactory.create(gson))
+        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+        .build();
+
+TestService service = retrofit.create(TestService.class);
+
+Response<Article> response = service.singleResource().execute();
+if (response.isSuccessful()) {
+    JsonApiResponseAdapter<Article> responseAdapter = RetrofitJsonApiHelper.getJsonApiAdapterFromResponse(response);
+    if (responseAdapter.isSuccess()) {
+        Article article = responseAdapter.getData();
+    }
+}
+
+```
+###### 2. rx.Observable
+```java
+Gson gson = new GsonBuilder()
+        .registerTypeAdapterFactory(new JsonApiTypeAdapterFactory()).create();
+
+Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(server.url("/").toString())
+        .addConverterFactory(JsonApiConverterFactory.create(gson))
+        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+        .build();
+
+TestService service = retrofit.create(TestService.class);
+
+Observable<Article> response = service.singleResourceRx();
+response.subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(
+                new Action1<Article>() {
+                    
+                    @Override
+                    public void call(Article response) {
+                        JsonApiResponseAdapter<Article> responseAdapter = RetrofitJsonApiHelper.getJsonApiAdapterFromResource(resource);
+                        Article article = responseAdapter.getData();
+                    }
+                    
+                },
+                new Action1<Throwable>() {
+
+                    @Override
+                    public void call(Throwable throwable) {
+                        
+                    }
+
+                }
+        );
+```
 
 ##License
 
