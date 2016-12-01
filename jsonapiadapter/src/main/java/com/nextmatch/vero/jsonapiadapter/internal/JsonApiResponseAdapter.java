@@ -46,6 +46,8 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
     /**
      * Top Level tag 정보를 읽는다
      * data, error, included
+     * Background task 로 response 를 받아 parsing 할 경우 Object를 반환 받기 전에 Top Level 의 주요정보를
+     * parsing 해둬야 동적으로 정보를 추출할때 memory 와 같은 resource 가 덜 소모될 것으로 생각되어 생성자에서 호출하도록 작성.
      */
     private void readTopLevel() {
         if (_reader.hasData(_jsonApiObject)) {

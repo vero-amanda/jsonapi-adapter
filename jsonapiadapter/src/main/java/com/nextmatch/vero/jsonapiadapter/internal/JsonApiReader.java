@@ -28,6 +28,7 @@ import java.util.Map;
 class JsonApiReader implements JsonApiConstants {
 
     private Gson _context;
+    /** Type 정보를 가지고 새로운 Instance 를 생성하기 위한 Class 생성자 제공자 */
     private ConstructorConstructor _constructor;
 
     JsonApiReader(Gson context) {
