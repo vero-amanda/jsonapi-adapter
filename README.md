@@ -19,7 +19,7 @@ Root build.grald:
 Application build.gradle:
 
     dependencies {
-        compile 'com.github.vero-amanda:JsonApiAdapter:v0.9-beta'
+        compile 'com.github.vero-amanda:jsonapi-adapter:1.1.0'
     }
 
 
