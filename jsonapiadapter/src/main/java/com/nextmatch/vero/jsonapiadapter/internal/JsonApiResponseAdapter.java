@@ -137,6 +137,17 @@ public class JsonApiResponseAdapter<T extends Resource> implements JsonApiAdapte
 
     /**
      * Included 의 Object Data 를 반환.
+     * @param name               Relationships 에 정의된 Name
+     * @param classOfResource    Data 의 Type
+     * @param <R>                Data 의 Type
+     * @return Included Data
+     */
+    public <R extends Resource> R getIncluded(String name, Class<R> classOfResource) {
+        return getIncluded(getData(), name, classOfResource);
+    }
+
+    /**
+     * Included 의 Object Data 를 반환.
      * @param parentResource     기본 Data Resource 객체
      * @param name               Relationships 에 정의된 Name
      * @param classOfResource    Data 의 Type
