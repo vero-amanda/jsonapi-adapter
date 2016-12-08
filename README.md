@@ -1,5 +1,5 @@
 # JsonApiAdapter
-[![](https://jitpack.io/v/vero-amanda/JsonApiAdapter.svg)](https://jitpack.io/#vero-amanda/JsonApiAdapter)
+[![](https://jitpack.io/v/vero-amanda/jsonapi-adapter.svg)](https://jitpack.io/#vero-amanda/jsonapi-adapter)
 
 Android [JsonApi][1] Spec v1.0 for [Gson][2]
 [1]: http://jsonapi.org
